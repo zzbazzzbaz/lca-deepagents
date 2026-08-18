@@ -1,7 +1,7 @@
 # python/m3/m3.2_homework_filled.py
-"""Reference copy of m3.2_homework.py with TODOs 1-3 filled in so you can
-run it end to end and see what "done" looks like. This is just one
-possible answer, so yours might be different. Explore!"""
+"""m3.2_homework.py 的参考副本，已将 TODO 1-3 填写完成，以便你能端到端运行它，
+看看“完成”是什么样子。这只是众多可行答案中的一种，所以你的答案可能不同。
+尽情探索吧！"""
 
 import tempfile
 from pathlib import Path
@@ -15,57 +15,53 @@ SKILL_NAME = "plan-a-workout"
 REFERENCE_PATH = f"/skills/{SKILL_NAME}/reference.md"
 
 
-# TODO 1 filled in
+# TODO 1 已填写
 def build_skill_md() -> str:
     return """---
 name: plan-a-workout
-description: Use when the user wants a structured workout plan for a specific day or goal.
+description: 当用户想要针对特定一天或目标制定一份结构化的锻炼计划时使用。
 ---
 
-# Plan a Workout
+# 制定一次锻炼计划
 
-Build a single-session workout plan tailored to the user's goal and available time.
+根据用户的目标和可用时间，制定一份单次训练的锻炼计划。
 
-**Step 1: Goal**: Ask what the user is training for today (strength, hypertrophy,
-endurance, or mobility) if it isn't already clear from their message.
+**第 1 步：目标**：如果用户消息里还不明确，就问他们今天要练什么（力量、增肌、
+耐力还是柔韧性）。
 
-**Step 2: Constraints**: Confirm how much time they have and what equipment is
-available (bodyweight only, dumbbells, a full gym).
+**第 2 步：限制条件**：确认他们有多少时间、有哪些器材可用（仅自重、哑铃、还是完整健身房）。
 
-**Step 3: Look up the numbers**: Before writing sets and reps, read `reference.md`
-in this skill's directory for the exact sets/reps/rest table for the stated
-goal. Do not guess these numbers; they vary by goal and this skill's rubric is
-specific about them.
+**第 3 步：查表取数**：在写组数和次数之前，先读取本技能目录中的 `reference.md`，
+以获得针对所陈述目标的确切组数/次数/休息表。不要自行猜测这些数字；
+它们随目标不同而变化，而且本技能的评分标准对它们有明确规定。
 
-**Step 4: Warm-up**: Always include a 5-minute warm-up appropriate to the goal.
+**第 4 步：热身**：始终包含 5 分钟与目标相符的热身。
 
-**Step 5: Main block**: Write 4-6 exercises using the sets/reps/rest from
-reference.md that fit the stated goal, time, and equipment.
+**第 5 步：主体部分**：使用 reference.md 中的组数/次数/休息来编写 4-6 个动作，
+使其符合所陈述的目标、时间和器材。
 
-**Step 6: Cool-down**: End with 2-3 minutes of stretching relevant to the muscles
-worked.
+**第 6 步：放松**：以 2-3 分钟针对所练肌群的拉伸结束。
 
-## Output
+## 输出
 
-Present the plan as a numbered list: warm-up, main block (with sets/reps/rest
-per reference.md), then cool-down. Keep the whole plan realistic for the time
-the user gave you.
+以编号列表形式呈现计划：热身、主体部分（组数/次数/休息按 reference.md），然后是放松。
+让整个计划对用户给出的时间来说是现实可行的。
 """
 
 
-# TODO 2 filled in
+# TODO 2 已填写
 def build_reference_md() -> str:
-    return """# Sets / Reps / Rest Rubric
+    return """# 组数 / 次数 / 休息评分标准
 
-Use the row matching the user's stated goal. Do not deviate from these
-numbers; they're calibrated for a single 20-30 minute session.
+使用与用户所陈述目标匹配的那一行。不要偏离这些数字；
+它们是为单次 20-30 分钟的训练校准的。
 
-| Goal        | Sets | Reps      | Rest between sets |
-|-------------|------|-----------|--------------------|
-| Strength    | 4-5  | 4-6       | 90-120 seconds     |
-| Hypertrophy | 3-4  | 8-12      | 60-90 seconds      |
-| Endurance   | 2-3  | 15-20     | 30-45 seconds      |
-| Mobility    | 2-3  | 30-60s hold (not reps) | 15-30 seconds |
+| 目标        | 组数  | 次数    | 组间休息        |
+|-------------|------|--------|-----------------|
+| 力量        | 4-5  | 4-6     | 90-120 秒       |
+| 增肌        | 3-4  | 8-12    | 60-90 秒        |
+| 耐力        | 2-3  | 15-20   | 30-45 秒        |
+| 柔韧性      | 2-3  | 保持 30-60 秒（非次数） | 15-30 秒 |
 """
 
 
@@ -76,13 +72,12 @@ _skill_dir.mkdir(parents=True, exist_ok=True)
 (_skill_dir / "reference.md").write_text(build_reference_md())
 
 backend = FilesystemBackend(root_dir=str(_tmp_root), virtual_mode=True)
-print(f"Skill files written to: {_skill_dir}")
+print(f"技能文件已写入: {_skill_dir}")
 
 
-# TODO 3 filled in
-SYSTEM_PROMPT = """You are Coach Ren, an upbeat but no-nonsense personal
-trainer. Keep your tone encouraging and practical."""
-USER_QUESTION = "I have 30 minutes and just a pair of dumbbells. Give me a workout focused on strength."
+# TODO 3 已填写
+SYSTEM_PROMPT = """你是教练任，一位热情但务实的私人教练。请保持鼓励而实用的语气。"""
+USER_QUESTION = "我有 30 分钟，只有一副哑铃。给我一份以力量为主的训练计划。"
 
 agent = create_deep_agent(
     model=model,
@@ -102,9 +97,9 @@ read_calls = [
     if call["name"] == "read_file"
 ]
 reference_was_read = any(call["args"].get("file_path") == REFERENCE_PATH for call in read_calls)
-print(f"\n--- Did the agent read {REFERENCE_PATH}? {reference_was_read} ---")
+print(f"\n--- agent 是否读取了 {REFERENCE_PATH}? {reference_was_read} ---")
 if not reference_was_read:
     print(
-        "It didn't. Either SKILL.md isn't clearly telling it to, or the "
-        "task is answerable without the details in reference.md."
+        "没有读取。要么是 SKILL.md 没有清楚地指示它去读，"
+        "要么是这个任务不读 reference.md 里的细节也能回答。"
     )

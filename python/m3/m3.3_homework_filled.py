@@ -1,7 +1,7 @@
 # python/m3/m3.3_homework_filled.py
-"""Reference copy of m3.3_homework.py with TODOs 1 and 2 filled in so you
-can run it end to end and see what "done" looks like. This is just one
-possible answer, so yours might be different. Explore!"""
+"""m3.3_homework.py 的参考副本，已将 TODO 1 和 TODO 2 填写完成，以便你能端到端运行它，
+看看“完成”是什么样子。这只是众多可行答案中的一种，所以你的答案可能不同。
+尽情探索吧！"""
 
 from deepagents import create_deep_agent
 from deepagents.backends import CompositeBackend, StateBackend, StoreBackend
@@ -26,33 +26,31 @@ def memory_namespace(runtime):
     return namespace_from_context(runtime.context)
 
 
-# TODO 1 filled in
+# TODO 1 已填写
 def build_seed_memory_a() -> str:
     return """\
-# Houseplant Notes
+# 室内绿植笔记
 
-## Watering
-- The fiddle-leaf fig gets watered every 10 days, not on a fixed weekday;
-  check the top inch of soil first.
-- The succulents on the windowsill only get watered when the soil is
-  completely dry, roughly every 2-3 weeks.
+## 浇水
+- 琴叶榕每 10 天浇一次水，不固定在某个星期几；先检查土壤表层一英寸。
+- 窗台上的多肉只在土壤完全干透时才浇水，大约每 2-3 周一次。
 
-## Light
-- The pothos and snake plant tolerate low light and live in the hallway.
-- Everything else needs the south-facing window.
+## 光照
+- 绿萝和虎尾兰耐阴，养在走廊里。
+- 其他植物都需要朝南的窗户。
 """
 
 
 def build_seed_memory_b() -> str:
     return """\
-# Herb Garden Notes
+# 香草园笔记
 
-## Watering
-- Basil and mint want consistently moist soil; check daily in summer.
-- Rosemary is drought-tolerant; only water when the top two inches are dry.
+## 浇水
+- 罗勒和薄荷喜欢持续湿润的土壤；夏天每天检查。
+- 迷迭香耐旱；只有在表层两英寸变干时才浇水。
 
-## Light
-- All three herbs live on the kitchen windowsill, which gets morning sun.
+## 光照
+- 这三种香草都养在厨房窗台上，那里能晒到上午的阳光。
 """
 
 
@@ -68,41 +66,41 @@ agent = create_deep_agent(
     ),
     store=store,
     memory=[memory_path],
-    system_prompt="You are a helpful personal assistant for this project.",
+    system_prompt="你是这个项目的一名乐于助人的私人助理。",
 )
 
 
-# TODO 2 filled in
-RECALL_QUESTION = "How often should I water the fiddle-leaf fig, and where does the pothos live?"
+# TODO 2 已填写
+RECALL_QUESTION = "琴叶榕应该多久浇一次水，绿萝养在哪里？"
 REMEMBER_MESSAGE = (
-    "Remember: I just repotted the fiddle-leaf fig, so skip watering it for "
-    "the next 3 weeks while the roots settle. Update your memory."
+    "记住：我刚给琴叶榕换了盆，所以接下来的 3 周先不要给它浇水，"
+    "让根系稳定下来。请更新你的记忆。"
 )
-LEAK_CHECK_QUESTION = "How often should I water the fiddle-leaf fig, and where does the pothos live?"
+LEAK_CHECK_QUESTION = "琴叶榕应该多久浇一次水，绿萝养在哪里？"
 
-# 1. Context A recalls from its own seed.
+# 1. 上下文 A 从它自己的种子记忆中回忆。
 result_a1 = agent.invoke({"messages": [{"role": "user", "content": RECALL_QUESTION}]}, context=CONTEXT_A)
-print("--- Context A, Question 1 ---")
+print("--- 上下文 A，问题 1 ---")
 print(result_a1["messages"][-1].content)
 
-# 2. Context A learns a new, distinctive fact.
+# 2. 上下文 A 学会一条新的、独特的事实。
 result_a2 = agent.invoke({"messages": [{"role": "user", "content": REMEMBER_MESSAGE}]}, context=CONTEXT_A)
-print("\n--- Context A, Question 2 (remember) ---")
+print("\n--- 上下文 A，问题 2（记住） ---")
 print(result_a2["messages"][-1].content)
 
-# 3. Context B asks the same question. It should NOT see anything from A.
+# 3. 上下文 B 询问同一个问题。它不应看到来自 A 的任何内容。
 result_b = agent.invoke({"messages": [{"role": "user", "content": LEAK_CHECK_QUESTION}]}, context=CONTEXT_B)
-print("\n--- Context B, leak-check question ---")
+print("\n--- 上下文 B，泄漏检查问题 ---")
 print(result_b["messages"][-1].content)
 
 memory_a = store.get(namespace_from_context(CONTEXT_A), store_memory_path).value["content"]
 memory_b = store.get(namespace_from_context(CONTEXT_B), store_memory_path).value["content"]
-print("\n--- Context A's stored AGENTS.md ---")
+print("\n--- 上下文 A 存储的 AGENTS.md ---")
 print(memory_a)
-print("\n--- Context B's stored AGENTS.md ---")
+print("\n--- 上下文 B 存储的 AGENTS.md ---")
 print(memory_b)
 
 if memory_a == memory_b:
-    print("\nISOLATION FAILED: both contexts share identical stored memory.")
+    print("\n隔离失败：两个上下文共享了完全相同的存储记忆。")
 else:
-    print("\nStored memories differ between contexts, as expected.")
+    print("\n各上下文的存储记忆彼此不同，符合预期。")

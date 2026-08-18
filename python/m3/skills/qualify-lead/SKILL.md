@@ -1,24 +1,24 @@
 ---
 name: qualify-lead
-description: Use when the user wants to qualify a sales lead or prospect.
+description: 当用户想要对销售线索或潜在客户进行资格认定时使用。
 ---
 
-# Qualify a Lead
+# 对线索进行资格认定
 
-Use the BANT framework to qualify the prospect systematically.
+使用 BANT 框架系统地认定潜在客户。
 
-**Step 1: Budget**: Ask what budget range they are working with and how purchasing decisions are made in their organisation.
+**第 1 步：预算（Budget）**：询问他们手头的预算范围，以及他们组织内的采购决策是如何做出的。
 
-**Step 2: Authority**: Confirm whether you are speaking with the decision maker. If not, ask who is and whether they can be involved.
+**第 2 步：决策权（Authority）**：确认你正在交谈的人是否为决策者。如果不是，询问谁是，以及他们能否参与进来。
 
-**Step 3: Need**: Understand the specific pain point. What problem are they trying to solve? What happens if it stays unsolved?
+**第 3 步：需求（Need）**：理解具体的痛点。他们想解决什么问题？如果问题得不到解决会怎样？
 
-**Step 4: Timeline**: Ask when they are looking to make a decision and when they would need the solution running.
+**第 4 步：时间线（Timeline）**：询问他们打算什么时候做决定，以及他们什么时候需要解决方案上线运行。
 
-## Output
+## 输出
 
-After gathering responses, classify the lead and summarise your findings:
+在收集完回答之后，对线索进行分类并总结你的发现：
 
-- **Qualified**: clear budget, authority confirmed, defined need, decision within 90 days
-- **Nurture**: one or more gaps; recommend a follow-up in 30 days
-- **Disqualify**: no budget, no authority, or no real need identified
+- **已合格（Qualified）**：预算明确、决策权已确认、需求明确、90 天内做决定
+- **培育中（Nurture）**：存在一项或多项缺口；建议 30 天后跟进
+- **不合格（Disqualify）**：没有预算、没有决策权，或没有识别出真正的需求

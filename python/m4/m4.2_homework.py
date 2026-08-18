@@ -1,30 +1,26 @@
 # python/m4/m4.2_homework.py
-"""M4.2 Homework: Give Each Subagent Its Own Scoped Scratch Folder.
+"""M4.2 作业：为每个子代理分配自己的隔离草稿文件夹。
 
-THE IDEA
-The lab's genre-researcher subagents each wrote raw search notes to their own
-assigned /research/<genre>/ folder, kept out of the editor's context by
-FilesystemPermission scoping: researchers could write under /research/**, the
-editor could not. 
+核心思想
+实验中的文体研究者子代理各自把原始检索笔记写入被分配到的
+/research/<文体>/ 文件夹，通过 FilesystemPermission 作用域把它们隔离在
+编辑者的上下文之外：研究者可以写入 /research/** 下，而编辑者不能。
 
-This homework asks you to build a small team of 2 subagent types for 
-a domain YOU pick (e.g., trip planning, home renovation), each with 
-its own private, permission-scoped folder under /scratch/<name>/ to
-stash raw notes in before answering. The harness below wires up the scratch
-folder, the permissions, and the write-before-answering instruction for you;
-you just decide who your two subagents are.
+这份作业要求你为一个由你自行选择的领域（例如旅行规划、家庭装修）
+构建一支由 2 种子代理组成的小团队，每种子代理在 /scratch/<名称>/ 下
+拥有自己私有的、受权限作用域限制的文件夹，在作答前先把原始笔记存放进去。
+下面的框架已经帮你接好了草稿文件夹、权限以及"先写再答"的指令；
+你只需要决定你的两个子代理是谁。
 
-WHAT YOU FILL IN
-  TODO 1: for each of the two entries in SUBAGENT_SPECS, fill in "name",
-    "description" (when the main agent should call it), and "role_prompt"
-    (who this subagent is and what its job is). Everything else -- the
-    scratch folder, the permissions, the instruction to save raw notes
-    before answering -- is handled for you.
-  TODO 2: write the main agent's system prompt, telling it which subagent
-    to call for which part of the job, and a user request that should
-    trigger delegation to BOTH subagents.
+需要你填写的内容
+  TODO 1：对于 SUBAGENT_SPECS 中的两个条目，分别填写 "name"、
+    "description"（主代理应在何时调用它）和 "role_prompt"
+    （这个子代理是谁、它的职责是什么）。其余一切——草稿文件夹、权限、
+    作答前保存原始笔记的指令——都已经帮你处理好了。
+  TODO 2：编写主代理的系统提示词，告诉它任务的哪一部分该调用哪个子代理，
+    以及一个应该触发它把任务委派给两个子代理的用户请求。
 
-RUN
+运行方式
   cd python
   uv run ./m4/m4.2_homework.py
 """
@@ -41,9 +37,9 @@ def scratch_path(subagent_name: str) -> str:
 
 
 def scratch_permissions(subagent_name: str) -> list:
-    """Scope a subagent to write only under its own scratch folder -- the same
-    first-match-wins allow-then-deny pattern the lab used for
-    research_permissions/editor_permissions."""
+    """把子代理限定为只能写入它自己的草稿文件夹——和实验里用于
+    research_permissions/editor_permissions 的"首个匹配生效、先允许后拒绝"
+    模式相同。"""
     return [
         FilesystemPermission(operations=["read", "write"], paths=[f"{SCRATCH_ROOT}/{subagent_name}/**"], mode="allow"),
         FilesystemPermission(operations=["write"], paths=["/**"], mode="deny"),
@@ -52,9 +48,9 @@ def scratch_permissions(subagent_name: str) -> list:
 
 def scratch_instruction(subagent_name: str) -> str:
     return (
-        f'Before you answer, call write_file on "{scratch_path(subagent_name)}" '
-        "with your raw notes or reasoning. Then give your final answer using "
-        "only the polished result -- do not repeat those raw notes in your reply."
+        f'在作答之前，请对 "{scratch_path(subagent_name)}" 调用 write_file，'
+        "写入你的原始笔记或推理过程。然后只使用整理后的结果给出最终答案——"
+        "不要在回复中重复那些原始笔记。"
     )
 
 
@@ -74,50 +70,48 @@ def build_subagents(specs: list[dict]) -> list[dict]:
 
 
 # ════════════════════════════════════════════════════════════════════════
-# TODO 1: Fill in your two subagents.
+# TODO 1：填写你的两个子代理。
 #
-# For each entry: "name" is the handle the main agent calls it by, kebab-
-# case (e.g. "flight-finder"). "description" is how the main agent decides
-# which one to use. "role_prompt" is that subagent's own job description --
-# don't mention scratch files or write_file here, that's added for you.
+# 对于每个条目："name" 是主代理调用它时使用的名称，使用 kebab-case
+# （例如 "flight-finder"）。"description" 用于主代理决定该调用哪一个。
+# "role_prompt" 是这个子代理自己的职责描述——不要在这里提到草稿文件
+# 或 write_file，那些会由程序自动加上。
 # ════════════════════════════════════════════════════════════════════════
 
 SUBAGENT_SPECS = [
     {
         "name": "TODO-1-name-1",
-        "description": "TODO 1: when should the main agent delegate to this one?",
-        "role_prompt": "TODO 1: who is this subagent, and what is its job?",
+        "description": "TODO 1：主代理应在何时把任务委派给这个子代理？",
+        "role_prompt": "TODO 1：这个子代理是谁，它的职责是什么？",
     },
     {
         "name": "TODO-1-name-2",
-        "description": "TODO 1: when should the main agent delegate to this one?",
-        "role_prompt": "TODO 1: who is this subagent, and what is its job?",
+        "description": "TODO 1：主代理应在何时把任务委派给这个子代理？",
+        "role_prompt": "TODO 1：这个子代理是谁，它的职责是什么？",
     },
 ]
 
 
 # ════════════════════════════════════════════════════════════════════════
-# TODO 2: Write the main agent's system prompt and a triggering request.
+# TODO 2：编写主代理的系统提示词和一条触发请求。
 #
-# MAIN_PROMPT should tell the main agent about each subagent by name and
-# when to call it (mirror how EDITOR_PROMPT in the lab named
-# genre-researcher and explained the job).
-# USER_REQUEST should be a task that should make the main agent delegate to
-# BOTH of your subagents.
+# MAIN_PROMPT 应该按名称向主代理介绍每个子代理以及何时调用它
+# （模仿实验中 EDITOR_PROMPT 是如何点名 genre-researcher 并解释其职责的）。
+# USER_REQUEST 应该是一个能让主代理把任务委派给你的两个子代理的任务。
 # ════════════════════════════════════════════════════════════════════════
 
-MAIN_PROMPT = """TODO 2: replace this with your own main agent system prompt."""
-USER_REQUEST = "TODO 2: replace this with a request that should trigger delegation to both subagents."
+MAIN_PROMPT = """TODO 2：请用你自己的主代理系统提示词替换这一句。"""
+USER_REQUEST = "TODO 2：请用一条应能触发向两个子代理委派任务的请求替换这一句。"
 
 for _spec in SUBAGENT_SPECS:
     if _spec["name"].startswith("TODO-1"):
-        raise NotImplementedError("TODO 1: see the comment block above")
+        raise NotImplementedError("TODO 1：请查看上面的注释块")
 if MAIN_PROMPT.startswith("TODO 2") or USER_REQUEST.startswith("TODO 2"):
-    raise NotImplementedError("TODO 2: see the comment block above")
+    raise NotImplementedError("TODO 2：请查看上面的注释块")
 
 _team = build_subagents(SUBAGENT_SPECS)
 
-# The main agent must never write into any subagent's scratch folder either.
+# 主代理也绝不能写入任何一个子代理的草稿文件夹。
 MAIN_PERMISSIONS = [
     FilesystemPermission(operations=["write"], paths=[f"{SCRATCH_ROOT}/**"], mode="deny"),
 ]
@@ -137,15 +131,15 @@ result = agent.invoke(
 print(result["messages"][-1].content)
 
 files = result.get("files", {})
-print("\n--- Scratch folder isolation check ---")
+print("\n--- 草稿文件夹隔离检查 ---")
 for spec in SUBAGENT_SPECS:
     path = scratch_path(spec["name"])
-    print(f"  {path}: {'found' if path in files else 'not written (subagent may not have been called)'}")
+    print(f"  {path}: {'找到' if path in files else '未写入（子代理可能未被调用）'}")
 
 scratch_files = [p for p in files if p.startswith(SCRATCH_ROOT + "/")]
 expected = {scratch_path(spec["name"]) for spec in SUBAGENT_SPECS}
 stray = [p for p in scratch_files if p not in expected]
 if stray:
-    print(f"  Unexpected scratch files (isolation may have failed): {stray}")
+    print(f"  意外的草稿文件（隔离可能失败）：{stray}")
 else:
-    print("  No stray scratch files -- each subagent wrote only to its own folder.")
+    print("  没有游离的草稿文件——每个子代理都只写入了自己的文件夹。")

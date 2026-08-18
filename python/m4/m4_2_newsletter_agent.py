@@ -1,15 +1,14 @@
 # python/m4/m4_2_newsletter_agent.py
-"""Module 4 · Lesson 2 — Building a subagent team.
+"""第 4 模块 · 第 2 课——构建子代理团队。
 
-An "editor" main agent delegates each of the distributor's top music genres to
-a single `genre-researcher` subagent type, run in parallel. Each researcher
-web-searches its genre, keeps the raw results in an assigned /research/<genre>/
-scratch folder, and returns one short article segment. The editor assembles the
-segments and writes a styled HTML newsletter to /output/newsletter.html.
+一位"编辑"主代理把发行商最热门的音乐流派逐一委派给同一个
+`genre-researcher` 子代理类型，并行运行。每个研究者对它的流派进行网络搜索，
+把原始结果保存在被分配到的 /research/<流派>/ 草稿文件夹中，
+然后返回一段简短的通讯稿片段。编辑者把这些片段组装起来，
+写出一份带样式的 HTML 通讯稿到 /output/newsletter.html。
 
-The agent runs on the default (ephemeral) StateBackend — it never touches the
-real local filesystem. The companion m4.2_run_newsletter.py extracts the finished HTML from agent state
-and writes it to disk.
+该代理运行在默认（临时）的 StateBackend 上——它绝不会触碰真实的本地文件系统。
+配套的 m4.2_run_newsletter.py 会把最终生成的 HTML 从代理状态中取出并写入磁盘。
 """
 
 import os
@@ -22,17 +21,17 @@ from tavily import TavilyClient
 
 from models import model, strong_model
 
-# The distributor's top genres — known up front, no database needed.
+# 发行商最热门的流派——事先已知，无需数据库。
 TOP_GENRES = ["Rock", "Latin", "Metal", "Alternative & Punk"]
 
 
-# --- Tools -----------------------------------------------------------------
-# internet_search belongs ONLY to the subagent (see `tools=` below).
+# --- 工具 -----------------------------------------------------------------
+# internet_search 只属于子代理（参见下方的 `tools=`）。
 tavily_api_key = os.environ.get("TAVILY_API_KEY")
 if not tavily_api_key:
     raise RuntimeError(
-        "TAVILY_API_KEY is required for the Module 4.2 newsletter lab. "
-        "Set it in your environment before running m4.2_run_newsletter.py."
+        "运行第 4.2 课通讯稿实验需要 TAVILY_API_KEY。"
+        "请在运行 m4.2_run_newsletter.py 之前把它设置到环境中。"
     )
 
 _tavily = TavilyClient(api_key=tavily_api_key)
@@ -40,14 +39,14 @@ _tavily = TavilyClient(api_key=tavily_api_key)
 
 @tool
 def internet_search(query: str, max_results: int = 8) -> dict:
-    """Search the web for recent news. Use this to research what's new in a
-    music genre — new releases, notable artists, trends, and events."""
+    """在网络上搜索最近的新闻。用它来调研某个音乐流派的最新动态——
+    新发行、值得关注的艺人、潮流和事件。"""
     return _tavily.search(query, max_results=max_results, topic="news")
 
 
-# markdown_to_html belongs ONLY to the editor (the main agent).
-# The template is a fixed, static string. NOTE: in production you would
-# sanitize model/search-derived text before rendering it to HTML.
+# markdown_to_html 只属于编辑者（主代理）。
+# 模板是一个固定的静态字符串。注意：在生产环境中，你应该在渲染成 HTML 之前
+# 对模型/搜索来源的文本进行消毒处理。
 _HTML_TEMPLATE = """<!doctype html>
 <html lang="en">
 <head>
@@ -72,40 +71,39 @@ _HTML_TEMPLATE = """<!doctype html>
 
 @tool
 def markdown_to_html(markdown_text: str, title: str = "This Week in Music") -> str:
-    """Convert a Markdown newsletter into a complete, styled HTML page.
-    Returns the full HTML document as a string."""
+    """把一份 Markdown 通讯稿转换为完整的、带样式的 HTML 页面。
+    返回完整 HTML 文档字符串。"""
     body = md.markdown(markdown_text, extensions=["tables", "fenced_code"])
-    # Good practice: the newsletter text is derived from untrusted web search,
-    # so allowlist-sanitize it (strips <script>, onerror=, etc.) before it goes
-    # into the page. We clean only the body; the template itself is trusted.
+    # 良好实践：通讯稿文本来源于不可信的网页搜索，所以在放进页面之前先做
+    # 白名单消毒（去除 <script>、onerror= 等）。我们只清洗 body；
+    # 模板本身是可信的。
     body = nh3.clean(body)
     return _HTML_TEMPLATE.format(title=title, body=body)
 
 
-# --- The research subagent -------------------------------------------------
-GENRE_PROMPT = """You are a music journalist researching one genre for an
-online music distributor's weekly newsletter.
+# --- 研究子代理 -------------------------------------------------------------
+GENRE_PROMPT = """你是一名音乐记者，正在为一个在线音乐发行商的每周通讯稿
+调研一种音乐流派。
 
-You will be given a single genre and an assigned research folder to work in.
+你将被给到一种流派，以及一个被分配给你的研究文件夹。
 
-How to work:
-1. Use internet_search to find recent, noteworthy developments in that genre
-   — new releases, notable artists, trends, or events. Run a few searches.
-2. Save the COMPLETE, verbatim output of ALL your searches to a single file:
-   write_file("/research/<genre>/sources.md", ...). Paste the results exactly
-   as the tool returned them — every result's title, URL, and full content
-   snippet. Do NOT summarize, trim, or reformat. This one file is your raw
-   archive: all the bulky material stays here so it never clutters the
-   editor's context.
-3. Only then, from what you found, write one tight newsletter segment.
+工作方式：
+1. 使用 internet_search 查找该流派最近的、值得关注的动态——新发行、
+   值得注意的艺人、潮流或事件。多搜索几次。
+2. 把你所有搜索的【完整、逐字】输出保存到一个文件中：
+   write_file("/research/<流派>/sources.md", ...)。把工具返回的结果原样粘贴进去——
+   包括每条结果的标题、URL 和完整内容摘要。不要做总结、删减或重新排版。
+   这一个文件就是你的原始存档：所有冗长的材料都留在这里，
+   这样它们绝不会把编辑者的上下文弄乱。
+3. 然后，才从你找到的内容中写出一段精炼的通讯稿片段。
 
-Return ONLY the finished segment as your reply:
-- A markdown section: a "## <Genre>" heading followed by ~120-180 words.
-- Lively but factual newsletter tone; name specific artists and releases.
-- Do NOT paste raw search results or link dumps into your reply — those live
-  in your research files. Return just the polished segment."""
+只把完成后的片段作为你的回复返回：
+- 一个 Markdown 小节：一个 "## <流派>" 标题，后跟约 120-180 词。
+- 生动但客观的通讯稿语气；点名具体的艺人和发行。
+- 不要把原始搜索结果或链接列表粘贴进你的回复——那些存在于你的研究文件中。
+  只返回润色后的片段。"""
 
-# Researchers may write under /research/** and are denied writes elsewhere.
+# 研究者可以写入 /research/**，且被禁止在其他位置写入。
 research_permissions = [
     FilesystemPermission(operations=["read", "write"], paths=["/research/**"], mode="allow"),
     FilesystemPermission(operations=["write"], paths=["/**"], mode="deny"),
@@ -114,37 +112,37 @@ research_permissions = [
 genre_researcher = {
     "name": "genre-researcher",
     "description": (
-        "Research one music genre and write a short newsletter segment about "
-        "what's new in it. Delegate one genre per call."
+        "调研一种音乐流派，并写一段关于它最新动态的简短通讯稿片段。"
+        "每次调用只委派一种流派。"
     ),
-    "system_prompt": GENRE_PROMPT,         # its own brain — never inherited
-    "tools": [internet_search],            # override — replaces the inherited set
-    "model": model,                        # override — the cheaper Haiku 4.5
-    "permissions": research_permissions,   # override — scoped write access
+    "system_prompt": GENRE_PROMPT,         # 它自己的大脑——绝不继承
+    "tools": [internet_search],            # 覆盖——替换继承的工具集
+    "model": model,                        # 覆盖——更便宜的 Haiku 4.5
+    "permissions": research_permissions,   # 覆盖——受限的写入权限
 }
 
 
-# --- The editor (main agent) -----------------------------------------------
-EDITOR_PROMPT = f"""You are the editor of an online music distributor's weekly
-newsletter. This week you are featuring the distributor's top genres:
-{", ".join(TOP_GENRES)}.
+# --- 编辑者（主代理）-------------------------------------------------------
+EDITOR_PROMPT = f"""你是一个在线音乐发行商每周通讯稿的编辑。
+本周你要重点报道发行商最热门的流派：
+{", ".join(TOP_GENRES)}。
 
-Your job:
-1. For EACH genre, delegate to the genre-researcher subagent using the task
-   tool — fire them off in parallel. Tell each one which genre to cover and
-   which assigned folder to use (/research/<genre>/), and ask for one segment.
-2. Collect the four returned segments. Do NOT research genres yourself.
-3. Assemble them into one Markdown newsletter: a top-level "# This Week in
-   Music" title, a one-sentence intro, then the four "## <Genre>" sections.
-4. Call markdown_to_html on the assembled Markdown, then write_file the
-   returned HTML to /output/newsletter.html.
+你的职责：
+1. 对每种流派，使用 task 工具把任务委派给 genre-researcher 子代理——
+   并行地把它们派出去。告诉每个子代理要报道哪种流派、使用哪个被分配到的
+   文件夹（/research/<流派>/），并让它返回一段片段。
+2. 收集返回的四段片段。不要自己去做流派调研。
+3. 把它们组装成一份 Markdown 通讯稿：一个顶层 "# This Week in Music" 标题、
+   一句引子，然后是四个 "## <流派>" 小节。
+4. 对组装好的 Markdown 调用 markdown_to_html，然后把返回的 HTML 通过
+   write_file 写入 /output/newsletter.html。
 
-Keep your own context focused on coordination and assembly."""
+把你的上下文聚焦在协调与组装上。"""
 
-# The editor uses the stronger shared model; the researcher overrides to the
-# cheaper `model` (Haiku 4.5) above. Both come from models.py.
+# 编辑者使用更强的共享模型；研究者在上方覆盖为更便宜的 `model`
+# （Haiku 4.5）。两者都来自 models.py。
 
-# The editor may read the research area but must not write into it.
+# 编辑者可以读取研究区，但绝不能写入其中。
 editor_permissions = [
     FilesystemPermission(operations=["write"], paths=["/research/**"], mode="deny"),
 ]

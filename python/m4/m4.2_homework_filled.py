@@ -1,7 +1,7 @@
 # python/m4/m4.2_homework_filled.py
-"""Reference copy of m4.2_homework.py with TODOs 1 and 2 filled in so you
-can run it end to end and see what "done" looks like. This is just one
-possible answer, so yours might be different. Explore!"""
+"""m4.2_homework.py 的参考副本，其中 TODO 1 和 TODO 2 已被填写完成，
+让你可以端到端运行，看看"完成"的样子。这只是众多可行答案之一，
+你的答案可能不同。去探索吧！"""
 
 from deepagents import FilesystemPermission, create_deep_agent
 
@@ -23,9 +23,9 @@ def scratch_permissions(subagent_name: str) -> list:
 
 def scratch_instruction(subagent_name: str) -> str:
     return (
-        f'Before you answer, call write_file on "{scratch_path(subagent_name)}" '
-        "with your raw notes or reasoning. Then give your final answer using "
-        "only the polished result -- do not repeat those raw notes in your reply."
+        f'在作答之前，请对 "{scratch_path(subagent_name)}" 调用 write_file，'
+        "写入你的原始笔记或推理过程。然后只使用整理后的结果给出最终答案——"
+        "不要在回复中重复那些原始笔记。"
     )
 
 
@@ -44,52 +44,48 @@ def build_subagents(specs: list[dict]) -> list[dict]:
     return team
 
 
-# TODO 1 filled in
+# TODO 1 已填写
 SUBAGENT_SPECS = [
     {
         "name": "workout-planner",
-        "description": "Design a single workout session for a stated goal, time budget, and equipment.",
+        "description": "为给定的目标、时间预算和可用器械设计一次单次训练课程。",
         "role_prompt": (
-            "You are a strength and conditioning coach. Given a client's goal, "
-            "available time, and equipment, write one session's workout: a "
-            "short warm-up, 4-6 main exercises with sets/reps, and a cool-down. "
-            "Keep it realistic for the time given."
+            "你是一名力量与体能教练。根据客户的训练目标、可用时间和器械，"
+            "编写一次训练课程的内容：一个简短的热身、4-6 个带组数/次数的主项动作，"
+            "以及一个放松整理。要考虑到给定的时间，让计划切实可行。"
         ),
     },
     {
         "name": "nutrition-advisor",
-        "description": "Suggest meal structure and food swaps that support a stated fitness goal.",
+        "description": "针对给定的健身目标，给出膳食结构和食物替换建议。",
         "role_prompt": (
-            "You are a sports nutrition advisor. Given a client's goal "
-            "(strength, endurance, weight loss, etc.) and any dietary "
-            "restrictions they mention, suggest a simple daily meal structure "
-            "(not a rigid meal plan) and 2-3 concrete food swaps that support "
-            "that goal."
+            "你是一名运动营养顾问。根据客户的训练目标（增肌、耐力、减脂等）"
+            "以及他们提到的任何饮食限制，给出一个简单的每日膳食结构"
+            "（不是严格的饮食计划）和 2-3 个有助于达成该目标的具体食物替换建议。"
         ),
     },
 ]
 
 
-# TODO 2 filled in
-MAIN_PROMPT = """You are Coach, the lead of a small fitness coaching team.
-For any client request, delegate to your specialists using the task tool:
-- workout-planner for the actual exercises
-- nutrition-advisor for food and meal guidance
+# TODO 2 已填写
+MAIN_PROMPT = """你是教练，一个小型健身指导团队的负责人。
+对于任何客户请求，使用 task 工具委派给你的专家：
+- workout-planner 负责实际的动作安排
+- nutrition-advisor 负责饮食和膳食指导
 
-Delegate to both if the request touches both areas. Collect their responses
-and present one combined, friendly plan to the client."""
+如果请求同时涉及这两个方面，就同时委派给两者。汇总他们的回复，
+向客户呈现一个组合起来的、友好的完整计划。"""
 
 USER_REQUEST = (
-    "I'm training for a half marathon in 8 weeks. I run 3 days a week and want "
-    "a strength workout for one of my non-running days, plus advice on what to "
-    "eat on run days versus rest days."
+    "我正在为 8 周后的半程马拉松训练。我每周跑 3 天，想为其中一个不跑步的日子"
+    "安排一次力量训练，同时希望得到关于跑步日与休息日应该怎么吃的建议。"
 )
 
 for _spec in SUBAGENT_SPECS:
     if _spec["name"].startswith("TODO-1"):
-        raise NotImplementedError("TODO 1: see the comment block above")
+        raise NotImplementedError("TODO 1：请查看上面的注释块")
 if MAIN_PROMPT.startswith("TODO 2") or USER_REQUEST.startswith("TODO 2"):
-    raise NotImplementedError("TODO 2: see the comment block above")
+    raise NotImplementedError("TODO 2：请查看上面的注释块")
 
 _team = build_subagents(SUBAGENT_SPECS)
 
@@ -112,15 +108,15 @@ result = agent.invoke(
 print(result["messages"][-1].content)
 
 files = result.get("files", {})
-print("\n--- Scratch folder isolation check ---")
+print("\n--- 草稿文件夹隔离检查 ---")
 for spec in SUBAGENT_SPECS:
     path = scratch_path(spec["name"])
-    print(f"  {path}: {'found' if path in files else 'not written (subagent may not have been called)'}")
+    print(f"  {path}: {'找到' if path in files else '未写入（子代理可能未被调用）'}")
 
 scratch_files = [p for p in files if p.startswith(SCRATCH_ROOT + "/")]
 expected = {scratch_path(spec["name"]) for spec in SUBAGENT_SPECS}
 stray = [p for p in scratch_files if p not in expected]
 if stray:
-    print(f"  Unexpected scratch files (isolation may have failed): {stray}")
+    print(f"  意外的草稿文件（隔离可能失败）：{stray}")
 else:
-    print("  No stray scratch files -- each subagent wrote only to its own folder.")
+    print("  没有游离的草稿文件——每个子代理都只写入了自己的文件夹。")

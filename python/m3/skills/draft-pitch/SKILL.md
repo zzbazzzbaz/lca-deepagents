@@ -1,20 +1,20 @@
 ---
 name: draft-pitch
-description: Use when the user wants to write a sales pitch or outreach message for a prospect.
+description: 当用户想为某个潜在客户撰写一份销售提案或外联消息时使用。
 ---
 
-# Draft a Sales Pitch
+# 起草一份销售提案
 
-Follow these steps to write a concise, effective pitch.
+按照以下步骤撰写一份简洁有效的提案。
 
-**Step 1: Research**: Ask for the prospect's company name, their role, and any context about their situation or pain points.
+**第 1 步：调研**：询问潜在客户的公司名称、他们的职位，以及关于他们处境或痛点的任何背景信息。
 
-**Step 2: Hook**: Open with one sentence that names the problem they are likely experiencing.
+**第 2 步：开场钩子**：用一句话点出他们很可能正在经历的问题作为开头。
 
-**Step 3: Value proposition**: One to two sentences explaining what the product does and who it is for.
+**第 3 步：价值主张**：用一到两句话说明这个产品是做什么的、面向谁。
 
-**Step 4: Social proof**: One brief example: "We helped [similar company] achieve [specific result]."
+**第 4 步：社会证明**：一个简短的例子：“我们曾帮助 [类似公司] 取得了 [具体成果]。”
 
-**Step 5: Call to action**: End with a specific, low-friction ask; a 15-minute call or a short reply.
+**第 5 步：行动号召**：以一个具体、低门槛的请求结尾；比如一次 15 分钟的通话或一句简短的回复。
 
-Keep the final pitch under 150 words.
+请把最终提案控制在 150 字以内。

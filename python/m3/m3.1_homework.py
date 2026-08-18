@@ -1,31 +1,26 @@
 # python/m3/m3.1_homework.py
-"""M3.1 Homework: Trigger Chained Summarization.
+"""M3.1 作业：触发链式摘要（Summarization）。
 
-THE IDEA
-In the lesson, you watched SummarizationMiddleware compress a demo
-conversation ONCE, past the 85% threshold. But summarization doesn't just
-fire once and stop: on a long enough conversation it fires again, and again
-each time it re-summarizes the previous summary plus whatever's new since,
-while the FULL evicted history keeps piling up in a single backend file at
-/conversation_history/{thread_id}.md. 
+核心思路
+在本课中，你看到 SummarizationMiddleware 将演示对话压缩了一次，超过了 85% 的阈值。
+但摘要并不会只触发一次就停止：在一段足够长的对话中，它会一而再、再而三地触发，
+每次都会在“上一条摘要 + 此后新增内容”的基础上重新做摘要，
+而完整的被淘汰历史会不断累积到位于 /conversation_history/{thread_id}.md 的单一后端文件中。
 
-This homework asks you to build a conversation on a topic you pick that's 
-long enough to trigger summarization AT LEAST TWICE, then confirm two things: 
-the model can still recall a detail from your very first turn (after being 
-compacted multiple times), and the conversation history file on the backend 
-actually accumulated multiple "Summarized at ..." sections 
-instead of losing earlier ones.
+这份作业要求你围绕自己选定的一个主题构建一段足够长的对话，
+以便至少触发两次摘要，然后确认两件事：
+模型仍然能回忆出你最初那一轮里的某个细节（即便已经过多次压缩），
+以及后端的历史记录文件确实累积了多个“Summarized at ...”小节，
+而不是丢失了更早的那些。
 
-WHAT YOU FILL IN
-  TODO 1: write your own list of user turns (at least 8) about a topic YOU
-    pick. Put an important detail in one of your first two turns, then keep
-    talking about the topic for several more turns, and end with a turn
-    that asks the agent to recall that early detail.
-  TODO 2: choose model.profile["max_input_tokens"] so summarization fires
-    at least twice before your last turn, not just once. Tune it by trial
-    and error, same as the lesson did with 700.
+你要填写的内容
+  TODO 1：为你自己选定的一个主题编写你自己的用户消息列表（至少 8 条）。
+    在前两轮中的某一轮里放一个重要的细节，然后再围绕该主题聊几轮，
+    最后以一条要求 agent 回忆该早期细节的消息收尾。
+  TODO 2：调整 model.profile["max_input_tokens"]，让摘要在你的最后一轮之前
+    至少触发两次，而不是只触发一次。像本课用 700 那样，通过反复试验来调参。
 
-RUN
+运行
   cd python
   uv run ./m3/m3.1_homework.py
 """
@@ -40,49 +35,45 @@ from models import model
 
 
 # ════════════════════════════════════════════════════════════════════════
-# TODO 1: Write your own multi-turn scenario.
+# TODO 1：编写你自己的多轮场景。
 #
-# Requirements:
-#   - At least 8 user turns, all about ONE topic of your choosing.
-#   - One of your first two turns should state a concrete detail (a number,
-#     a name, a decision).
-#   - Your last turn should ask the agent to recall that detail, after
-#     several more turns of unrelated follow-up on the same topic.
+# 要求：
+#   - 至少 8 条用户消息，全部围绕你选定的一个主题。
+#   - 前两轮中的某一轮应陈述一个具体细节（一个数字、一个名称、一个决定）。
+#   - 最后一轮应要求 agent 回忆该细节，在此之前围绕同一主题进行几轮不相关的追问。
 #
-# Example shape (delete this and write your own):
+# 示例结构（删除这些并编写你自己的）：
 #   return [
-#       "I'm planning a two-week trip to ...",
-#       "My total budget is ...",
+#       "我正在计划一次两周的……旅行",
+#       "我的总预算是……",
 #       ...,
 #       ...,
 #       ...,
-#       "Quick recap: what was my total budget?",
+#       "快速回顾：我的总预算是多少？",
 #   ]
 # ════════════════════════════════════════════════════════════════════════
 
 def build_turns() -> list[str]:
-    """TODO 1: return your own list of user turns (at least 8)."""
-    raise NotImplementedError("TODO 1: see the comment block above")
+    """TODO 1：返回你自己的用户消息列表（至少 8 条）。"""
+    raise NotImplementedError("TODO 1：见上方注释块")
 
 
 # ════════════════════════════════════════════════════════════════════════
-# TODO 2: Choose the summarization threshold.
+# TODO 2：选择摘要触发阈值。
 #
-# Lower model.profile["max_input_tokens"] to a value that makes
-# SummarizationMiddleware fire (at 85% of that number) AT LEAST TWICE
-# across your conversation from TODO 1, not just once. The lesson used 700
-# for a 5-turn demo that fired once; your number depends on how many turns
-# you wrote and how long they are.
+# 把 model.profile["max_input_tokens"] 调低到一个能让 SummarizationMiddleware
+# 在 TODO 1 的整段对话中（以该数值的 85% 为触发点）至少触发两次、而非仅一次的值。
+# 本课对 5 轮演示用了 700 并只触发一次；你的数值取决于你写了几轮、每轮多长。
 # ════════════════════════════════════════════════════════════════════════
 
-MAX_INPUT_TOKENS = None  # TODO 2: replace None with your chosen integer threshold
+MAX_INPUT_TOKENS = None  # TODO 2：用你选定的整数阈值替换 None
 
 model.profile = {**model.profile, "max_input_tokens": MAX_INPUT_TOKENS}
 
 agent = create_deep_agent(
     model=model,
     checkpointer=MemorySaver(),
-    system_prompt="You are a helpful assistant. Keep every response to one sentence.",
+    system_prompt="你是一位乐于助人的助手。请让每一条回复都保持一句话。",
 )
 
 THREAD = {"configurable": {"thread_id": "homework"}}
@@ -98,19 +89,19 @@ async def turn(message: str) -> str:
 
 
 async def show_state(seen_cutoffs: set) -> bool:
-    """Print state after a turn. Returns True if this turn produced a NEW
-    summarization event (as opposed to still living under a previous one)."""
+    """打印一轮之后的状态。如果这一轮产生了一个新的摘要事件
+    （而不是仍然处于上一个事件之下），则返回 True。"""
     state = await agent.aget_state(THREAD)
     messages = state.values.get("messages", [])
     event = state.values.get("_summarization_event")
-    print(f"  stored : {len(messages)} message(s) (raw history, never trimmed)")
+    print(f"  已存储 : {len(messages)} 条消息 (原始历史，绝不裁剪)")
     if not event:
         return False
     cutoff = event.get("cutoff_index", "?")
     is_new_event = cutoff not in seen_cutoffs
     seen_cutoffs.add(cutoff)
-    tag = "  <-- NEW EVENT" if is_new_event else ""
-    print(f"  model saw : summary + messages[{cutoff}:]  [SUMMARIZED]{tag}")
+    tag = "  <-- 新事件" if is_new_event else ""
+    print(f"  模型所见 : summary + messages[{cutoff}:]  [已摘要]{tag}")
     return is_new_event
 
 
@@ -120,17 +111,17 @@ async def main() -> None:
     event_count = 0
     for i, message in enumerate(turns, 1):
         print(f"\n{'─' * 50}")
-        print(f"Turn {i}  User:  {message}")
+        print(f"第 {i} 轮  用户:  {message}")
         response = await turn(message)
-        print(f"Turn {i}  Agent: {response}")
+        print(f"第 {i} 轮  助手: {response}")
         if await show_state(seen_cutoffs):
             event_count += 1
 
-    print(f"\nSummarization fired {event_count} time(s) across {len(turns)} turns.")
+    print(f"\n摘要在 {len(turns)} 轮对话中触发了 {event_count} 次。")
     if event_count < 2:
         print(
-            "That's fewer than 2. Lower MAX_INPUT_TOKENS, or add more turns/detail, "
-            "so it fires again before the conversation ends."
+            "这少于 2 次。请调低 MAX_INPUT_TOKENS，或增加更多轮/更多细节，"
+            "让它在对话结束前再次触发。"
         )
 
     state = await agent.aget_state(THREAD)
@@ -138,7 +129,7 @@ async def main() -> None:
     if history_file:
         content = history_file["content"] if isinstance(history_file, dict) else history_file
         sections = content.count("## Summarized at")
-        print(f"\n--- {HISTORY_PATH} ({sections} section(s)) ---")
+        print(f"\n--- {HISTORY_PATH} ({sections} 个小节) ---")
         print(content)
 
 

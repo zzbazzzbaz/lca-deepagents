@@ -1,29 +1,24 @@
 # python/m3/m3.2_homework.py
-"""M3.2 Homework: Bundle a Reference File Into Your Skill.
+"""M3.2 作业：把参考文件打包进你的技能（Skill）。
 
-THE IDEA
-The lab's two skills (qualify-lead and draft-pitch) are each a single flat
-SKILL.md file with everything inline. But the lesson also covered a third
-stage of progressive disclosure: a skill can point to supporting files (a
-reference doc, a template, a script) that live alongside SKILL.md and that
-the agent only reads when it actually needs them, instead of stuffing
-everything into the system prompt up front. This homework asks you to write
-a skill for a topic or workflow YOU pick (not sales) that bundles a SECOND
-file with details the agent needs but that aren't in SKILL.md itself, then
-confirm from the trace that the agent actually called `read_file` on that
-second file before answering, rather than guessing.
+核心思路
+本实验的两个技能（qualify-lead 和 draft-pitch）各自都是单个扁平的 SKILL.md 文件，
+所有内容都内联在其中。但本课还介绍了渐进式披露的第三个阶段：
+一个技能可以指向与 SKILL.md 同目录存放的支持性文件（一份参考文档、一个模板、一个脚本），
+agent 只在真正需要时才会去读取这些文件，而不是把所有内容都预先塞进系统提示里。
+这份作业要求你为自己选定的一个主题或工作流（不是销售）编写一个技能，
+该技能要打包第二个文件，其中包含 agent 需要但 SKILL.md 本身并不包含的细节，
+然后从 trace 中确认 agent 在作答之前确实对第二个文件调用了 `read_file`，
+而不是靠猜。
 
-WHAT YOU FILL IN
-  TODO 1: write your own SKILL.md content. It must instruct the agent to
-    read a `reference.md` file (in the same skill directory) for specific
-    details it needs, and must NOT restate those details inline. The `name`
-    field in your frontmatter must exactly match SKILL_NAME below.
-  TODO 2: write reference.md's content: the specific facts, numbers, or
-    template your skill's instructions point to and depend on.
-  TODO 3: write a system prompt and a user question that should activate
-    your skill.
+你要填写的内容
+  TODO 1：编写你自己的 SKILL.md 内容。它必须指示 agent 为所需的特定细节
+    读取一个 `reference.md` 文件（位于同一技能目录中），并且绝不能把这些细节
+    内联重复写出来。frontmatter 中的 `name` 字段必须与下面的 SKILL_NAME 完全一致。
+  TODO 2：编写 reference.md 的内容：你的技能指令所指并依赖的那些具体事实、数字或模板。
+  TODO 3：编写一个系统提示和一个应能激活你技能的用户问题。
 
-RUN
+运行
   cd python
   uv run ./m3/m3.2_homework.py
 """
@@ -36,59 +31,56 @@ from deepagents.backends.filesystem import FilesystemBackend
 
 from models import model
 
-# This name becomes the skill's directory name. It must exactly match the
-# `name:` field you write in the frontmatter inside build_skill_md() below.
+# 这个名称会成为技能的目录名。它必须与下面 build_skill_md() 中 frontmatter 里
+# 你写的 `name:` 字段完全一致。
 SKILL_NAME = "your-skill-name"
 REFERENCE_PATH = f"/skills/{SKILL_NAME}/reference.md"
 
 
 # ════════════════════════════════════════════════════════════════════════
-# TODO 1: Write your own SKILL.md content.
+# TODO 1：编写你自己的 SKILL.md 内容。
 #
-# Requirements:
-#   - YAML frontmatter with `name` (must equal SKILL_NAME above) and
-#     `description` (a specific sentence describing WHEN to use this skill).
-#   - Steps that tell the agent to open `reference.md` (in this same skill
-#     directory) for the specific details it needs to do the task well.
-#   - Do NOT put those details in SKILL.md itself; if the agent could do
-#     the task correctly without ever reading reference.md, this doesn't
-#     exercise progressive disclosure.
+# 要求：
+#   - YAML frontmatter，包含 `name`（必须等于上面的 SKILL_NAME）和
+#     `description`（一句具体的话，描述何时使用该技能）。
+#   - 步骤要告诉 agent 为完成任务的特定细节去打开 `reference.md`（位于同一技能目录）。
+#   - 不要把这些细节写进 SKILL.md 本身；如果 agent 不读 reference.md 也能正确完成
+#     任务，那就没有实践渐进式披露。
 #
-# Example shape (delete this and write your own):
+# 示例结构（删除这些并编写你自己的）：
 #   return """---
 #   name: your-skill-name
-#   description: Use when the user wants to ...
+#   description: 当用户想要……时使用
 #   ---
 #
-#   # Your Skill Title
+#   # 你的技能标题
 #
-#   **Step 1: ...**: ...
-#   **Step 2: ...**: before proceeding, read reference.md in this skill's
-#     directory for the exact ... to use. Do not guess these.
+#   **第 1 步：...**：...
+#   **第 2 步：...**：在继续之前，请读取本技能目录中的 reference.md，
+#     以获得要使用的准确……。不要自行猜测。
 #   """
 # ════════════════════════════════════════════════════════════════════════
 
 def build_skill_md() -> str:
-    """TODO 1: return your own SKILL.md content as a string."""
-    raise NotImplementedError("TODO 1: see the comment block above")
+    """TODO 1：以字符串形式返回你自己的 SKILL.md 内容。"""
+    raise NotImplementedError("TODO 1：见上方注释块")
 
 
 # ════════════════════════════════════════════════════════════════════════
-# TODO 2: Write reference.md's content.
+# TODO 2：编写 reference.md 的内容。
 #
-# This should contain the specific facts your SKILL.md pointed to and
-# depends on: a rubric, a set of numbers, a template, a checklist. Specific
-# enough that an answer produced without reading it would visibly differ
-# from one produced with it.
+# 这部分应包含你的 SKILL.md 所指并依赖的那些具体事实：一份评分标准、一组数字、
+# 一个模板、一份检查清单。要具体到：一份不读它而产出的答案，
+# 会明显不同于读了它而产出的答案。
 # ════════════════════════════════════════════════════════════════════════
 
 def build_reference_md() -> str:
-    """TODO 2: return the content of your skill's reference.md."""
-    raise NotImplementedError("TODO 2: see the comment block above")
+    """TODO 2：返回你的技能 reference.md 的内容。"""
+    raise NotImplementedError("TODO 2：见上方注释块")
 
 
-# Write the skill to a scratch directory so it's discoverable through a
-# FilesystemBackend, the same mechanism the lab uses for python/m3/skills/.
+# 把技能写入一个临时目录，使其能通过 FilesystemBackend 被发现，
+# 这正是实验在 python/m3/skills/ 中所用的机制。
 _tmp_root = Path(tempfile.mkdtemp(prefix="m3_2_homework_"))
 _skill_dir = _tmp_root / "skills" / SKILL_NAME
 _skill_dir.mkdir(parents=True, exist_ok=True)
@@ -96,20 +88,18 @@ _skill_dir.mkdir(parents=True, exist_ok=True)
 (_skill_dir / "reference.md").write_text(build_reference_md())
 
 backend = FilesystemBackend(root_dir=str(_tmp_root), virtual_mode=True)
-print(f"Skill files written to: {_skill_dir}")
+print(f"技能文件已写入: {_skill_dir}")
 
 
 # ════════════════════════════════════════════════════════════════════════
-# TODO 3: Write a system prompt and a triggering question.
+# TODO 3：编写一个系统提示和一个可触发该技能的问题。
 #
-# SYSTEM_PROMPT: give the agent a persona of your choosing (a name, a
-# voice, anything you want).
-# USER_QUESTION: a question that should match your skill's `description`
-# closely enough that the agent activates it.
+# SYSTEM_PROMPT：给 agent 一个你选定的人设（一个名字、一种语气，随你发挥）。
+# USER_QUESTION：一个问题，应与你技能 `description` 足够贴近，使 agent 会激活它。
 # ════════════════════════════════════════════════════════════════════════
 
-SYSTEM_PROMPT = """TODO 3: replace this with your own system prompt."""
-USER_QUESTION = "TODO 3: replace this with a question that should trigger your skill."
+SYSTEM_PROMPT = """TODO 3：用你自己的系统提示替换这段文字。"""
+USER_QUESTION = "TODO 3：用一句应能触发你技能的问题替换这段文字。"
 
 agent = create_deep_agent(
     model=model,
@@ -129,9 +119,9 @@ read_calls = [
     if call["name"] == "read_file"
 ]
 reference_was_read = any(call["args"].get("file_path") == REFERENCE_PATH for call in read_calls)
-print(f"\n--- Did the agent read {REFERENCE_PATH}? {reference_was_read} ---")
+print(f"\n--- agent 是否读取了 {REFERENCE_PATH}? {reference_was_read} ---")
 if not reference_was_read:
     print(
-        "It didn't. Either SKILL.md isn't clearly telling it to, or the "
-        "task is answerable without the details in reference.md."
+        "没有读取。要么是 SKILL.md 没有清楚地指示它去读，"
+        "要么是这个任务不读 reference.md 里的细节也能回答。"
     )

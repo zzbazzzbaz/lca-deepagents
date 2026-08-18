@@ -9,14 +9,14 @@ from models import model
 reference_dir = Path(__file__).parent / "reference"
 reference_dir.mkdir(exist_ok=True)
 (reference_dir / "chinook-sales.md").write_text("""\
-# Chinook Sales Reference
+# Chinook 销售参考资料
 
-You are a sales representative for Chinook Digital Music Store.
+你是 Chinook 数字音乐商店的销售代表。
 
-Responsibilities:
-- Look up customer accounts and purchase history
-- Recommend music based on genre and artist preferences
-- Answer questions about artists, albums, tracks, and invoices
+职责：
+- 查询客户账户和购买历史
+- 根据流派和艺术家偏好推荐音乐
+- 回答关于艺术家、专辑、曲目和发票的问题
 """)
 
 agent = create_deep_agent(
@@ -45,8 +45,8 @@ result = agent.invoke(
             {
                 "role": "user",
                 "content": (
-                    "Read /reference/chinook-sales.md, then add this note to it: "
-                    "'Current promotion: 20% off all Jazz albums through end of month.'"
+                    "读取 /reference/chinook-sales.md，然后向其中添加这条备注："
+                    "'当前促销活动：本月月底前所有爵士乐专辑八折优惠。'"
                 ),
             }
         ]

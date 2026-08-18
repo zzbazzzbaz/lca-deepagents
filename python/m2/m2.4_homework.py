@@ -1,28 +1,23 @@
 # python/m2/m2.4_homework.py
-"""M2.4 Homework: Ask Your Own Question, Then Grade It.
+"""M2.4 作业：提出你自己的问题，然后为它评分。
 
-THE IDEA
-Lab 2 asked one fixed, dependent-query question about the Chinook
-database and let the interpreter chain four SQL queries together inside
-a single eval() call. This homework asks you to pose your OWN question
-about the database (anything query_chinook and a little JavaScript can
-answer, simple or dependent, your call), and then, since this lesson is
-also about evaluating what an agent's code produces, write your own quick
-eval check that judges whether the agent's answer looks right. There's no
-single right question or eval method here, that's the point.
+核心思路
+实验 2 针对 Chinook 数据库提出了一个固定的、依赖式查询的问题，并让解释器
+在单个 eval() 调用中把四条 SQL 查询串联在一起。本作业要求你针对该数据库提出
+你自己的问题（query_chinook 和少量 JavaScript 能回答的任何问题都可以，简单
+的或依赖式的都行），然后，由于本课还涉及评估代理代码生成的内容，请编写一个
+你自己快速编写的 eval 检查，判断代理的回答看起来是否正确。这里没有唯一正确的
+问题或评估方法，这正是本作业的意义所在。
 
-WHAT YOU FILL IN
-  TODO 1: write your own natural-language question about the Chinook
-    database (see the schema hints in SYSTEM below) for the interpreter
-    agent to answer using eval() and query_chinook.
-  TODO 2: write a small eval_answer(...) function that independently
-    checks whether the agent's final answer looks correct. However you
-    want to do this is fine: run your own SQL query and compare, check
-    for an expected keyword or number, or just print both side by side
-    for your own judgment call. Pick whatever level of rigor makes sense
-    for your question.
+你要填写的内容
+  TODO 1：编写你自己针对 Chinook 数据库的自然语言问题（参见下方 SYSTEM 中
+    的表结构提示），让解释器代理使用 eval() 和 query_chinook 来回答。
+  TODO 2：编写一个小型 eval_answer(...) 函数，独立检查代理的最终回答
+    看起来是否正确。你想怎么做都行：运行你自己的 SQL 查询并比较、检查
+    是否包含预期的关键字或数字，或者干脆把两者并排打印出来供你自己判断。
+    根据你的问题选择合适程度的严谨性即可。
 
-RUN
+运行方式
   cd python
   uv run ./m2/m2.4_homework.py
 """
@@ -41,22 +36,22 @@ from models import model
 DB_PATH = Path(__file__).resolve().parent / "chinook.db"
 
 SYSTEM = (
-    "You are a sales analyst for Chinook Digital Music Store. "
-    "Use the query_chinook tool to query the database. "
-    "Key tables: Artist(ArtistId, Name), Album(AlbumId, Title, ArtistId), "
+    "你是 Chinook 数字音乐商店的销售分析师。"
+    "使用 query_chinook 工具查询数据库。"
+    "关键表：Artist(ArtistId, Name), Album(AlbumId, Title, ArtistId), "
     "Track(TrackId, Name, AlbumId, GenreId), Genre(GenreId, Name), "
     "Customer(CustomerId, FirstName, LastName, Country), "
     "Invoice(InvoiceId, CustomerId), "
-    "InvoiceLine(InvoiceLineId, InvoiceId, TrackId, UnitPrice, Quantity). "
-    "Revenue is InvoiceLine.UnitPrice * InvoiceLine.Quantity. "
-    "The eval tool supports Programmatic Tool Calling (PTC): JavaScript "
-    "running inside eval() can call query_chinook via tools.queryChinook()."
+    "InvoiceLine(InvoiceLineId, InvoiceId, TrackId, UnitPrice, Quantity)。"
+    "收入为 InvoiceLine.UnitPrice * InvoiceLine.Quantity。"
+    "eval 工具支持编程式工具调用（Programmatic Tool Calling，PTC）：运行在 "
+    "eval() 内部的 JavaScript 可以通过 tools.queryChinook() 调用 query_chinook。"
 )
 
 
 @tool
 def query_chinook(sql: str) -> str:
-    """Execute a read-only SQL query against the Chinook database. Returns a JSON-encoded string."""
+    """对 Chinook 数据库执行只读 SQL 查询。返回一个 JSON 编码的字符串。"""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     try:
@@ -68,34 +63,32 @@ def query_chinook(sql: str) -> str:
 
 
 # ════════════════════════════════════════════════════════════════════════
-# TODO 1: Write your own question about the Chinook database.
+# TODO 1：编写你关于 Chinook 数据库的问题。
 #
-# Pick anything the query_chinook tool can answer: top customers by
-# country, which artist has the most albums, average invoice total by
-# year, whatever you're curious about. A question with a couple of
-# dependent steps (like Lab 2's) is a good excuse to use PTC, but a
-# single-query question is a perfectly fine answer too.
+# 挑选任何 query_chinook 工具能回答的内容：按国家/地区统计的顶级客户、
+# 哪位艺术家的专辑最多、按年份统计的平均发票总额，任何你好奇的内容。
+# 带有几个依赖步骤的问题（如实验 2 那样）很适合使用 PTC，但单个查询的
+# 问题也完全可以。
 # ════════════════════════════════════════════════════════════════════════
 
-TASK = None  # TODO 1: replace with your own question
+TASK = None  # TODO 1：替换为你自己的问题
 
 
 # ════════════════════════════════════════════════════════════════════════
-# TODO 2: Write a simple eval check for the agent's answer.
+# TODO 2：为代理的回答编写一个简单的 eval 检查。
 #
-# eval_answer(answer_text) runs after the agent responds. Independently
-# work out what you believe the right answer is (run your own SQL query,
-# do the math by hand, whatever) and compare it against answer_text. Print
-# whatever verdict makes sense; this doesn't need to be a strict
-# pass/fail, a reasoned printout is fine.
+# eval_answer(answer_text) 在代理回复后运行。独立地算出你认为的正确
+# 答案（运行你自己的 SQL 查询、手工计算，都行），并将其与 answer_text
+# 进行比较。打印你认为合理的任何结论；这不必是严格的通过/失败，
+# 一段有理有据的打印输出就很好。
 # ════════════════════════════════════════════════════════════════════════
 
 def eval_answer(answer_text: str) -> None:
-    raise NotImplementedError("TODO 2: see the comment block above")
+    raise NotImplementedError("TODO 2：见上方注释块")
 
 
 if TASK is None:
-    raise NotImplementedError("TODO 1: see the comment block above")
+    raise NotImplementedError("TODO 1：见上方注释块")
 
 agent = create_deep_agent(
     model=model,

@@ -1,7 +1,7 @@
 # python/m2/m2.4_homework_filled.py
-"""Reference copy of m2.4_homework.py with TODOs 1 and 2 filled in so you
-can run it end to end and see what "done" looks like. This is just one
-possible answer, so yours might be different. Explore!"""
+"""m2.4_homework.py 的参考版本，TODO 1 和 2 均已填写，你可以端到端运行
+它并查看“完成”的样子。这只是其中一种可能的答案，你的答案可能会不同。
+尽情探索吧！"""
 
 import json
 import sqlite3
@@ -17,22 +17,22 @@ from models import model
 DB_PATH = Path(__file__).resolve().parent / "chinook.db"
 
 SYSTEM = (
-    "You are a sales analyst for Chinook Digital Music Store. "
-    "Use the query_chinook tool to query the database. "
-    "Key tables: Artist(ArtistId, Name), Album(AlbumId, Title, ArtistId), "
+    "你是 Chinook 数字音乐商店的销售分析师。"
+    "使用 query_chinook 工具查询数据库。"
+    "关键表：Artist(ArtistId, Name), Album(AlbumId, Title, ArtistId), "
     "Track(TrackId, Name, AlbumId, GenreId), Genre(GenreId, Name), "
     "Customer(CustomerId, FirstName, LastName, Country), "
     "Invoice(InvoiceId, CustomerId), "
-    "InvoiceLine(InvoiceLineId, InvoiceId, TrackId, UnitPrice, Quantity). "
-    "Revenue is InvoiceLine.UnitPrice * InvoiceLine.Quantity. "
-    "The eval tool supports Programmatic Tool Calling (PTC): JavaScript "
-    "running inside eval() can call query_chinook via tools.queryChinook()."
+    "InvoiceLine(InvoiceLineId, InvoiceId, TrackId, UnitPrice, Quantity)。"
+    "收入为 InvoiceLine.UnitPrice * InvoiceLine.Quantity。"
+    "eval 工具支持编程式工具调用（Programmatic Tool Calling，PTC）：运行在 "
+    "eval() 内部的 JavaScript 可以通过 tools.queryChinook() 调用 query_chinook。"
 )
 
 
 @tool
 def query_chinook(sql: str) -> str:
-    """Execute a read-only SQL query against the Chinook database. Returns a JSON-encoded string."""
+    """对 Chinook 数据库执行只读 SQL 查询。返回一个 JSON 编码的字符串。"""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     try:
@@ -43,18 +43,16 @@ def query_chinook(sql: str) -> str:
         conn.close()
 
 
-# TODO 1 filled in
+# TODO 1 已填写
 TASK = (
-    "Which country's customers generated the most total revenue, and what "
-    "is the single best-selling track (by revenue) among customers from "
-    "that country? Each answer depends on the previous one."
+    "哪个国家的客户贡献的总收入最高，并且来自该国家的客户中"
+    "单一销量最高的曲目（按收入计算）是什么？每个答案都依赖于前一个答案。"
 )
 
 
-# TODO 2 filled in
+# TODO 2 已填写
 def eval_answer(answer_text: str) -> None:
-    """Independently compute the expected top country and top track, then
-    check whether both show up in the agent's answer."""
+    """独立计算预期的顶级国家和顶级曲目，然后检查两者是否都出现在代理的回答中。"""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     try:
@@ -86,16 +84,16 @@ def eval_answer(answer_text: str) -> None:
     finally:
         conn.close()
 
-    print("\n--- Eval check ---")
-    print(f"Expected top country: {top_country['Country']}")
-    print(f"Expected top track: {top_track['Name']}")
+    print("\n--- 评估检查 ---")
+    print(f"预期顶级国家：{top_country['Country']}")
+    print(f"预期顶级曲目：{top_track['Name']}")
 
     checks = {
         "mentions expected country": top_country["Country"].lower() in answer_text.lower(),
         "mentions expected track": top_track["Name"].lower() in answer_text.lower(),
     }
     for label, passed in checks.items():
-        print(f"  [{'PASS' if passed else 'FAIL'}] {label}")
+        print(f"  [{'通过' if passed else '未通过'}] {label}")
 
 
 agent = create_deep_agent(

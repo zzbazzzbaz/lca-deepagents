@@ -1,29 +1,26 @@
 # python/m2/m2.3_homework.py
-"""M2.3 Homework: Prove Persistence in Your Own Sandbox.
+"""M2.3 作业：在你自己的沙箱中证明持久化。
 
-THE IDEA
-Lab 1 wired up a sandboxed coding assistant for one fixed task: writing
-and running a Fibonacci script. This homework asks you to pick your own
-PAIR of tasks for the SAME sandbox to run, one after another, so you can
-see that the sandbox's filesystem sticks around between invoke() calls
-instead of resetting each time. TASK_TWO reads TASK_ONE's saved data and
-turns it into a matplotlib chart, which you then read back from the
-sandbox the same way Lab 2 reads its chart back.
+核心思路
+实验 1 为单个固定任务（编写并运行一个斐波那契脚本）配置了一个沙箱化的
+编码助手。本作业要求你为同一个沙箱挑选你自己的一对任务，一个接一个地运行，
+这样你就能看到沙箱的文件系统在两次 invoke() 调用之间得以保留，而不是每次
+都重置。TASK_TWO 会读取 TASK_ONE 保存的数据，并将其转换为 matplotlib 图表，
+然后你以与实验 2 读取其图表相同的方式，从沙箱中读回该图表。
 
-WHAT YOU FILL IN
-  TODO 1: write a system prompt describing the kind of coding assistant
-    you want (a persona, a set of working rules, whatever you like), as
-    long as it tells the agent to write code to a file before running it
-    (the same pattern Lab 1 used) and to use matplotlib for charts.
-  TODO 2: write TWO task messages for the same agent/sandbox. TASK_ONE
-    should have the agent generate or compute some numeric data and save
-    it to a file. TASK_TWO must read that file back (don't regenerate
-    the data) and chart it with matplotlib, saving the image to a
-    sandbox path you choose and tell the agent explicitly.
-  TODO 3: set CHART_PATH to the exact sandbox path you told the agent to
-    save the chart to in TASK_TWO, so it can be read back afterward.
+你要填写的内容
+  TODO 1：编写一条系统提示词，描述你想要的编码助手类型（一个角色、
+    一组工作规则，任何你喜欢的内容），只要它告诉代理在运行代码之前先
+    将代码写入文件（与实验 1 使用的模式相同），并在需要图表时使用
+    matplotlib 即可。
+  TODO 2：为同一个代理/沙箱编写两条任务消息。TASK_ONE 应让代理生成或
+    计算一些数值数据，并将其保存到文件中。TASK_TWO 必须读取该文件
+    （不要重新生成数据），并使用 matplotlib 绘制图表，将图片保存到你选择
+    的沙箱路径，并明确告诉代理。
+  TODO 3：将 CHART_PATH 设置为你在 TASK_TWO 中告诉代理保存图表的那个确切
+    沙箱路径，以便之后可以读回该图表。
 
-RUN
+运行方式
   cd python
   uv run ./m2/m2.3_homework.py
   open m2/homework_chart.png
@@ -39,76 +36,71 @@ from langsmith.sandbox import SandboxClient
 from models import model
 
 # ════════════════════════════════════════════════════════════════════════
-# TODO 1: Write a system prompt for your sandboxed data/charts assistant.
+# TODO 1：为你的沙箱化数据/图表助手编写一条系统提示词。
 #
-# Requirements:
-#   - Give it a persona (data analyst, scientist, whatever fits your data).
-#   - Tell it to write code to a file before running it (the same pattern
-#     Lab 1 used).
-#   - Tell it to install any packages it needs with pip before importing
-#     them (the same pattern Lab 2 used) - matplotlib is not preinstalled.
-#   - Tell it to use matplotlib when asked to build a chart.
+# 要求：
+#   - 为它设定一个角色（数据分析师、科学家，任何适合你数据的角色）。
+#   - 告诉它在运行代码之前先将代码写入文件（与实验 1 使用的模式相同）。
+#   - 告诉它在导入任何包之前先用 pip 安装它所需的包（与实验 2 使用的
+#     模式相同）——matplotlib 并非预装。
+#   - 告诉它在被要求构建图表时使用 matplotlib。
 #
-# Example (delete this and write your own):
+# 示例（删除这段，写你自己的）：
 #   SYSTEM_PROMPT = (
-#       "You are a data visualization assistant. When asked to run code, "
-#       "write the script to a file first, then execute it. Install any "
-#       "packages you need with pip before importing them. When asked "
-#       "for a chart, use matplotlib and save it as a .png file."
+#       "你是一个数据可视化助手。当被要求运行代码时，先编写脚本到文件，"
+#       "然后再执行它。在导入你需要的任何包之前，先用 pip 安装它们。"
+#       "当被要求制作图表时，使用 matplotlib 并将其保存为 .png 文件。"
 #   )
 # ════════════════════════════════════════════════════════════════════════
 
-SYSTEM_PROMPT = None  # TODO 1: replace with your own system prompt
+SYSTEM_PROMPT = None  # TODO 1：替换为你自己的系统提示词
 
 
 # ════════════════════════════════════════════════════════════════════════
-# TODO 2: Write two tasks that share the sandbox's state.
+# TODO 2：编写两个共享沙箱状态的任务。
 #
-# TASK_ONE: have the agent generate or compute some numeric data (made up
-#   or calculated) and save it to a file.
-# TASK_TWO: a SEPARATE request, sent afterward to the same agent, that
-#   reads TASK_ONE's file (without regenerating the data) and uses
-#   matplotlib to chart it, saving the image to a path you pick and
-#   state explicitly (e.g. "save the chart to /chart.png"), so TODO 3
-#   can read it back. Don't have TASK_TWO regenerate the data itself,
-#   that would work even without a persistent sandbox and wouldn't prove
-#   anything.
+# TASK_ONE：让代理生成或计算一些数值数据（虚构的或计算得出的），并将其
+#   保存到一个文件中。
+# TASK_TWO：一个 SEPARATE（独立的）请求，稍后发送给同一个代理，它读取
+#   TASK_ONE 的文件（不重新生成数据），并使用 matplotlib 绘制图表，将图片
+#   保存到你选择并明确说明的路径（例如“将图表保存到 /chart.png”），以便
+#   TODO 3 可以读回它。不要让 TASK_TWO 自己重新生成数据，那样即使没有持久化
+#   沙箱也能工作，也就无法证明任何东西。
 #
-# Example (delete this and write your own):
+# 示例（删除这段，写你自己的）：
 #   TASK_ONE = (
-#       "Generate 12 months of made-up monthly rainfall totals (in mm) "
-#       "for a fictional city, save them to rainfall.json, and print them."
+#       "为一个虚构的城市生成 12 个月的虚构月降雨量总和（以毫米为单位），"
+#       "将其保存到 rainfall.json，并打印出来。"
 #   )
 #   TASK_TWO = (
-#       "Read rainfall.json (don't regenerate the numbers) and create a "
-#       "bar chart of monthly rainfall. Save it to /chart.png."
+#       "读取 rainfall.json（不要重新生成这些数字），创建一张月降雨量的"
+#       "柱状图。将其保存到 /chart.png。"
 #   )
 # ════════════════════════════════════════════════════════════════════════
 
-TASK_ONE = None  # TODO 2: replace with your first task message
-TASK_TWO = None  # TODO 2: replace with a second task that charts TASK_ONE's file
+TASK_ONE = None  # TODO 2：替换为你的第一个任务消息
+TASK_TWO = None  # TODO 2：替换为对 TASK_ONE 的文件绘制图表的第二个任务
 
 
 # ════════════════════════════════════════════════════════════════════════
-# TODO 3: Point CHART_PATH at wherever TASK_TWO saves the chart.
+# TODO 3：将 CHART_PATH 指向 TASK_TWO 保存图表的位置。
 #
-# This must match the exact sandbox path you told the agent to use in
-# TASK_TWO. It's used below to read the chart back from the sandbox and
-# save it locally, the same way Lab 2 reads /genre_revenue.png back.
+# 这必须与你告诉代理在 TASK_TWO 中使用的确切沙箱路径一致。它用于下面从
+# 沙箱中读回图表并保存到本地，方式与实验 2 读回 /genre_revenue.png 相同。
 # ════════════════════════════════════════════════════════════════════════
 
-CHART_PATH = None  # TODO 3: replace with the sandbox path used in TASK_TWO
+CHART_PATH = None  # TODO 3：替换为 TASK_TWO 中使用的沙箱路径
 
 if SYSTEM_PROMPT is None:
-    raise NotImplementedError("TODO 1: see the comment block above")
+    raise NotImplementedError("TODO 1：见上方注释块")
 if TASK_ONE is None or TASK_TWO is None:
-    raise NotImplementedError("TODO 2: see the comment block above")
+    raise NotImplementedError("TODO 2：见上方注释块")
 if CHART_PATH is None:
-    raise NotImplementedError("TODO 3: see the comment block above")
+    raise NotImplementedError("TODO 3：见上方注释块")
 
 client = SandboxClient()
 ls_sandbox = client.create_sandbox(name=f"lca-deepagents-homework-{uuid4().hex[:8]}")
-print(f"Sandbox: {ls_sandbox.name}  (id: {ls_sandbox.id})")
+print(f"沙箱：{ls_sandbox.name}  （id：{ls_sandbox.id}）")
 backend = LangSmithSandbox(sandbox=ls_sandbox)
 
 agent = create_deep_agent(
@@ -119,16 +111,16 @@ agent = create_deep_agent(
 
 try:
     result = agent.invoke({"messages": [{"role": "user", "content": TASK_ONE}]})
-    print("--- Task 1 ---")
+    print("--- 任务 1 ---")
     print(result["messages"][-1].content)
 
     result = agent.invoke({"messages": [{"role": "user", "content": TASK_TWO}]})
-    print("\n--- Task 2 (same sandbox, should see Task 1's file) ---")
+    print("\n--- 任务 2（同一沙箱，应能看到任务 1 的文件）---")
     print(result["messages"][-1].content)
 
     chart_bytes = ls_sandbox.read(CHART_PATH)
     out_path = Path(__file__).parent / "homework_chart.png"
     out_path.write_bytes(chart_bytes)
-    print(f"Chart saved to {out_path}")
+    print(f"图表已保存到 {out_path}")
 finally:
     client.delete_sandbox(ls_sandbox.name)

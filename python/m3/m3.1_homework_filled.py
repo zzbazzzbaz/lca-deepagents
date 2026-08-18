@@ -1,7 +1,7 @@
 # python/m3/m3.1_homework_filled.py
-"""Reference copy of m3.1_homework.py with TODOs 1 and 2 filled in so you
-can run it end to end and see what "done" looks like. This is just one
-possible answer, so yours might be different. Explore!"""
+"""m3.1_homework.py 的参考副本，已将 TODO 1 和 TODO 2 填写完成，
+以便你能端到端运行它，看看“完成”是什么样子。这只是众多可行答案中的一种，
+所以你的答案可能不同。尽情探索吧！"""
 
 import asyncio
 
@@ -12,23 +12,23 @@ from langgraph.checkpoint.memory import MemorySaver
 from models import model
 
 
-# TODO 1 filled in
+# TODO 1 已填写
 def build_turns() -> list[str]:
     return [
-        "I'm planning a two-week trip to Japan in April, starting in Tokyo.",
-        "My total budget is $4,000 including flights.",
-        "What is 2 + 2?",
-        "I want to see cherry blossoms and visit at least one hot spring town.",
-        "What is the capital of Italy?",
-        "For the middle week I'm thinking Kyoto and Osaka by train.",
-        "What is 12 times 12?",
-        "I booked a JR rail pass already for the Tokyo-Kyoto-Osaka leg.",
-        "What is the capital of Germany?",
-        "Quick recap: what's my total budget, and what's the very first city I said I'd start in?",
+        "我正计划四月份去日本旅行两周，从东京出发。",
+        "我的总预算是 4000 美元，包含机票。",
+        "2 + 2 等于多少？",
+        "我想看樱花，并且至少去一个温泉小镇。",
+        "意大利的首都是哪里？",
+        "中间那周我打算坐火车去京都和大阪。",
+        "12 乘以 12 等于多少？",
+        "我已经预订了东京-京都-大阪段的 JR 铁路通票。",
+        "德国的首都是哪里？",
+        "快速回顾：我的总预算是多少，我说过出发的第一个城市是哪里？",
     ]
 
 
-# TODO 2 filled in
+# TODO 2 已填写
 MAX_INPUT_TOKENS = 3000
 
 model.profile = {**model.profile, "max_input_tokens": MAX_INPUT_TOKENS}
@@ -36,7 +36,7 @@ model.profile = {**model.profile, "max_input_tokens": MAX_INPUT_TOKENS}
 agent = create_deep_agent(
     model=model,
     checkpointer=MemorySaver(),
-    system_prompt="You are a helpful assistant. Keep every response to one sentence.",
+    system_prompt="你是一位乐于助人的助手。请让每一条回复都保持一句话。",
 )
 
 THREAD = {"configurable": {"thread_id": "homework"}}
@@ -52,19 +52,19 @@ async def turn(message: str) -> str:
 
 
 async def show_state(seen_cutoffs: set) -> bool:
-    """Print state after a turn. Returns True if this turn produced a NEW
-    summarization event (as opposed to still living under a previous one)."""
+    """打印一轮之后的状态。如果这一轮产生了一个新的摘要事件
+    （而不是仍然处于上一个事件之下），则返回 True。"""
     state = await agent.aget_state(THREAD)
     messages = state.values.get("messages", [])
     event = state.values.get("_summarization_event")
-    print(f"  stored : {len(messages)} message(s) (raw history, never trimmed)")
+    print(f"  已存储 : {len(messages)} 条消息 (原始历史，绝不裁剪)")
     if not event:
         return False
     cutoff = event.get("cutoff_index", "?")
     is_new_event = cutoff not in seen_cutoffs
     seen_cutoffs.add(cutoff)
-    tag = "  <-- NEW EVENT" if is_new_event else ""
-    print(f"  model saw : summary + messages[{cutoff}:]  [SUMMARIZED]{tag}")
+    tag = "  <-- 新事件" if is_new_event else ""
+    print(f"  模型所见 : summary + messages[{cutoff}:]  [已摘要]{tag}")
     return is_new_event
 
 
@@ -74,17 +74,17 @@ async def main() -> None:
     event_count = 0
     for i, message in enumerate(turns, 1):
         print(f"\n{'─' * 50}")
-        print(f"Turn {i}  User:  {message}")
+        print(f"第 {i} 轮  用户:  {message}")
         response = await turn(message)
-        print(f"Turn {i}  Agent: {response}")
+        print(f"第 {i} 轮  助手: {response}")
         if await show_state(seen_cutoffs):
             event_count += 1
 
-    print(f"\nSummarization fired {event_count} time(s) across {len(turns)} turns.")
+    print(f"\n摘要在 {len(turns)} 轮对话中触发了 {event_count} 次。")
     if event_count < 2:
         print(
-            "That's fewer than 2. Lower MAX_INPUT_TOKENS, or add more turns/detail, "
-            "so it fires again before the conversation ends."
+            "这少于 2 次。请调低 MAX_INPUT_TOKENS，或增加更多轮/更多细节，"
+            "让它在对话结束前再次触发。"
         )
 
     state = await agent.aget_state(THREAD)
@@ -92,7 +92,7 @@ async def main() -> None:
     if history_file:
         content = history_file["content"] if isinstance(history_file, dict) else history_file
         sections = content.count("## Summarized at")
-        print(f"\n--- {HISTORY_PATH} ({sections} section(s)) ---")
+        print(f"\n--- {HISTORY_PATH} ({sections} 个小节) ---")
         print(content)
 
 

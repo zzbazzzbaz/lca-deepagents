@@ -1,22 +1,20 @@
 # python/m4/data/prepare_corpus.py
-"""One-time prep script for the Module 4.3 "Corrupted Manuscript" lab.
+"""用于第 4.3 模块"被破坏的手稿"实验的一次性准备脚本。
 
-Downloads three public-domain prose translations from Project Gutenberg,
-strips their HTML/boilerplate down to plain text, normalizes each of the 60
-book headers to one consistent format, splices in a fixed set of
-anachronistic "corrupted" sentences at uneven positions, and writes:
+从古腾堡计划下载三部公共领域的散文译本，把它们的 HTML/样板文本剥离成
+纯文本，把 60 个卷的标题统一规范化为同一种格式，在不均匀的位置拼接进
+一组固定的不合时代"破坏"句子，然后写出：
 
-  epic_corpus.txt  — the combined, corrupted corpus students dispatch against
-  epic_corpus_key.json — the seeded corruptions and which book each lives in
+  epic_corpus.txt  — 合并后的、被破坏的语料，学生们的分派任务对象
+  epic_corpus_key.json — 植入的破坏内容以及每个句子所在的卷
 
-Sources (all public domain in the US; translators long deceased):
-  - The Iliad, tr. Samuel Butler (1898)   — Project Gutenberg #2199
-  - The Odyssey, tr. Samuel Butler (1900) — Project Gutenberg #1727
-  - The Aeneid, tr. J. W. Mackail (1885)  — Project Gutenberg #22456
+来源（在美国均为公共领域；译者早已过世）：
+  - 《伊利亚特》，Samuel Butler 译（1898）   — 古腾堡计划 #2199
+  - 《奥德赛》，Samuel Butler 译（1900） — 古腾堡计划 #1727
+  - 《埃涅阿斯纪》，J. W. Mackail 译（1885）  — 古腾堡计划 #22456
 
-This script is not part of the lab itself — the two files above are already
-checked into this directory. Re-run it only if you want to regenerate them
-(e.g. to change the seeded corruptions).
+本脚本不属于实验本身——上面两个文件已经提交到本目录中。只有当你想要
+重新生成它们时才需要再次运行它（例如要修改植入的破坏内容）。
 """
 
 import json
@@ -44,8 +42,8 @@ SOURCES = {
     },
 }
 
-# Seeded corruptions: (epic, book_number, sentence, position="middle"/"end").
-# Deliberately uneven — several books get two, most get zero.
+# 植入的破坏内容：(epic, book_number, sentence, position="middle"/"end")。
+# 故意分布不均——几卷里有两处，大多数卷为零处。
 CORRUPTIONS = [
     ("ILIAD", 2, "A vending machine hummed faintly beside the Scaean gates."),
     ("ILIAD", 9, "Patroclus adjusted his smartwatch before donning the borrowed armor."),
@@ -75,9 +73,8 @@ def fetch(url: str) -> str:
 
 
 def strip_html(chunk: str) -> str:
-    # Force real paragraph breaks at </p> boundaries *before* the generic tag
-    # strip below, since surrounding whitespace in the source HTML is too
-    # inconsistent to rely on for splitting paragraphs later.
+    # 在下方的通用标签剥离 *之前*，先在 </p> 边界强制插入真实的段落换行，
+    # 因为源 HTML 中的周围空白太不一致，无法在稍后切分段落时依赖它。
     chunk = re.sub(r"</p\s*>", "\n\n", chunk)
     chunk = re.sub(r"<br\s*/?>", "\n", chunk)
     text = TAG_RE.sub(" ", chunk)
@@ -91,25 +88,24 @@ def strip_html(chunk: str) -> str:
 
 
 def split_books(epic: str, raw: str) -> dict:
-    """Return {book_number: plain_text} for one epic's raw HTML."""
+    """返回一部史诗原始 HTML 的 {卷号: 纯文本}。"""
     start = PG_MARKER_RE.search(raw)
     body = raw[start.end():] if start else raw
     cfg = SOURCES[epic]
     matches = list(cfg["heading"].finditer(body))
     books = {}
     for i, m in enumerate(matches):
-        book_num = i + 1  # headings appear in book order
+        book_num = i + 1  # 标题按卷序出现
         end = matches[i + 1].start() if i + 1 < len(matches) else len(body)
         books[book_num] = strip_html(body[m.end():end])
     if len(books) != cfg["count"]:
-        raise RuntimeError(f"{epic}: expected {cfg['count']} books, found {len(books)}")
+        raise RuntimeError(f"{epic}: 预期 {cfg['count']} 卷，实际找到 {len(books)} 卷")
     return books
 
 
 def splice_corruption(text: str, sentence: str, slot: int, slots_in_book: int) -> str:
-    """Insert `sentence` at the end of a paragraph roughly slot/slots_in_book
-    of the way through the book, so multiple corruptions in one book land at
-    different spots rather than piling up in the same paragraph."""
+    """把 `sentence` 插入到全卷大约 slot/slots_in_book 处的一个段落末尾，
+    这样同一卷里的多处破坏会落在不同位置，而不会堆在同一段落里。"""
     paragraphs = [p for p in text.split("\n\n") if p.strip()]
     idx = min(len(paragraphs) - 1, max(0, (len(paragraphs) * slot) // (slots_in_book + 1)))
     paragraphs[idx] = paragraphs[idx].rstrip() + " " + sentence
@@ -119,12 +115,12 @@ def splice_corruption(text: str, sentence: str, slot: int, slots_in_book: int) -
 def main():
     all_books = {}
     for epic in SOURCES:
-        print(f"Fetching {epic}...")
+        print(f"正在获取 {epic}...")
         raw = fetch(SOURCES[epic]["url"])
         all_books[epic] = split_books(epic, raw)
-        print(f"  {len(all_books[epic])} books extracted")
+        print(f"  已提取 {len(all_books[epic])} 卷")
 
-    # Group corruptions by (epic, book) to assign distinct slots within a book.
+    # 按 (epic, book) 对破坏内容分组，以便在一卷内分配不同的插入槽位。
     slots_used = {}
     key_entries = []
     for epic, book_num, sentence in CORRUPTIONS:
@@ -140,7 +136,7 @@ def main():
         )
         key_entries.append({"epic": epic, "book": book_num, "sentence": sentence})
 
-    # Assemble the combined corpus in epic order: Iliad, Odyssey, Aeneid.
+    # 按史诗顺序组装合并后的语料：《伊利亚特》《奥德赛》《埃涅阿斯纪》。
     parts = []
     for epic in ("ILIAD", "ODYSSEY", "AENEID"):
         for book_num in sorted(all_books[epic]):
@@ -152,8 +148,8 @@ def main():
     key_path = OUT_DIR / "epic_corpus_key.json"
     key_path.write_text(json.dumps(key_entries, indent=2), encoding="utf-8")
 
-    print(f"\nWrote {corpus_path} ({len(corpus):,} chars, ~{len(corpus.split()):,} words)")
-    print(f"Wrote {key_path} ({len(key_entries)} seeded corruptions)")
+    print(f"\n已写入 {corpus_path}（{len(corpus):,} 字符，约 {len(corpus.split()):,} 词）")
+    print(f"已写入 {key_path}（{len(key_entries)} 处植入的破坏内容）")
 
 
 if __name__ == "__main__":

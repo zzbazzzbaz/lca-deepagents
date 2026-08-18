@@ -1,10 +1,10 @@
 # python/m4/m4.3_run_manuscript.py
-"""Run the manuscript agent, then self-check its findings against the known
-seeded corruptions in data/epic_corpus_key.json, an immediate, exact way to
-see whether the workflow's book-by-book dispatch actually covered everything.
+"""运行手稿代理，然后用已知的、植入在 data/epic_corpus_key.json 中的破坏
+内容对它找出的结果进行自查——这是一种即时、精确的方式，用来确认工作流
+按卷分派是否真的覆盖了所有内容。
 
-This check is for your own feedback while working through the lab, not a
-submitted grade: the key ships openly alongside the corpus.
+这个检查只是为了让你在学习实验的过程中获得反馈，不是提交的评分：
+密钥与语料一起公开放在那里。
 """
 
 import json
@@ -18,7 +18,7 @@ result = agent.invoke(
     {
         "messages": [{
             "role": "user",
-            "content": "Run a workflow to find every corrupted sentence in the manuscript.",
+            "content": "运行一个工作流，找出手稿中每一个被破坏的句子。",
         }]
     },
     config={"recursion_limit": 200},
@@ -32,8 +32,8 @@ seeded_sentences = {entry["sentence"] for entry in seeded}
 found_sentences = {s for s in seeded_sentences if s in report}
 
 missed = seeded_sentences - found_sentences
-print(f"\nSelf-check: {len(found_sentences)}/{len(seeded_sentences)} seeded corruptions appear in the report.")
+print(f"\n自查：报告中有 {len(found_sentences)}/{len(seeded_sentences)} 处植入的破坏内容。")
 if missed:
-    print("Missed:")
+    print("遗漏的句子：")
     for s in sorted(missed):
         print(f"  - {s}")

@@ -1,7 +1,7 @@
 # python/m2/m2.2_homework_filled.py
-"""Reference copy of m2.2_homework.py with TODOs 1 and 2 filled in so you
-can run it end to end and see what "done" looks like. This is just one
-possible answer, so yours might be different. Explore!"""
+"""m2.2_homework.py 的参考版本，TODO 1 和 2 均已填写，你可以端到端运行
+它并查看“完成”的样子。这只是其中一种可能的答案，你的答案可能会不同。
+尽情探索吧！"""
 
 from pathlib import Path
 
@@ -13,20 +13,20 @@ from models import model
 recipe_dir = Path(__file__).parent / "recipe_box"
 recipe_dir.mkdir(exist_ok=True)
 (recipe_dir / "grandmas_apple_pie.md").write_text("""\
-# Grandma's Apple Pie
+# 奶奶的苹果派
 
-Ingredients: 6 apples, 1 cup sugar, 2 tbsp cinnamon, double pie crust.
-Bake at 375F for 45 minutes.
+配料：6 个苹果、1 杯糖、2 汤匙肉桂粉、双层派皮。
+在 375 华氏度下烘烤 45 分钟。
 """)
 
-# TODO 1 filled in
+# TODO 1 已填写
 backend = FilesystemBackend(root_dir=str(recipe_dir), virtual_mode=True)
 
-# TODO 2 filled in
+# TODO 2 已填写
 TASK = (
-    "Read /grandmas_apple_pie.md, then create a new file called "
-    "/weeknight_pasta.md with a simple pasta recipe of your own. Finally, "
-    "try to add a note to /grandmas_apple_pie.md saying 'tested and it's great'."
+    "读取 /grandmas_apple_pie.md，然后创建一个名为 "
+    "/weeknight_pasta.md 的新文件，其中写一道你自己的简单意大利面食谱。最后，"
+    "尝试在 /grandmas_apple_pie.md 中添加一条备注：“已测试，味道很棒”。"
 )
 permissions = [
     FilesystemPermission(

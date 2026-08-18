@@ -1,26 +1,23 @@
 # python/m2/m2.2_homework.py
-"""M2.2 Homework: Configure Your Own Filesystem Backend.
+"""M2.2 作业：配置你自己的文件系统后端。
 
-THE IDEA
-The lab wired up one fixed setup: a CompositeBackend routing a single
-reference file to local disk with a permission rule denying all writes
-to it. This homework asks you to pick your own small file-based task and
-configure a backend for it however you like: StateBackend,
-FilesystemBackend, or a CompositeBackend mixing both. There's no single
-right backend or topic here, that's the point. Two students doing this
-homework could end up with completely different setups.
+核心思路
+本实验配置了一套固定的设置：一个 CompositeBackend 将单个参考文件
+路由到本地磁盘，并附带一条拒绝所有写入的权限规则。本作业要求你自行
+挑选一个小型的基于文件的任务，并按照你喜欢的方式为它配置后端：
+StateBackend、FilesystemBackend，或两者混合的 CompositeBackend。
+这里没有唯一正确的后端或主题，这正是本作业的意义所在。做这份作业的
+两个学生最终可能会得到完全不同的配置。
 
-WHAT YOU FILL IN
-  TODO 1: pick a topic for a small text file (a packing list, a journal,
-    a recipe box, meeting notes, whatever), seed it with some starting
-    content the same way the lab pre-populates reference/chinook-sales.md,
-    and configure ANY backend you like for the agent to use.
-  TODO 2: write a task message that has the agent read your file and then
-    write or edit it in some way, and (optionally) add one or more
-    FilesystemPermission rules that change what the agent is allowed to
-    do to it.
+你要填写的内容
+  TODO 1：为一个小型文本文件挑选一个主题（装箱清单、日记、食谱盒、
+    会议记录等都可以），用与实验预填充 reference/chinook-sales.md
+    相同的方式，为它写入一些初始内容，并为代理配置你喜欢的任意后端。
+  TODO 2：编写一条任务消息，让代理读取你的文件，然后以某种方式写入
+    或编辑它，并且（可选）添加一条或多条 FilesystemPermission 规则，
+    以改变代理对该文件被允许执行的操作。
 
-RUN
+运行方式
   cd python
   uv run ./m2/m2.2_homework.py
 """
@@ -34,43 +31,41 @@ from models import model
 
 
 # ════════════════════════════════════════════════════════════════════════
-# TODO 1: Configure a backend for a topic of your choosing.
+# TODO 1：为你的主题配置一个后端。
 #
-# Requirements:
-#   - Pick a small file-based task: a packing list, a journal, a recipe
-#     box, meeting notes, whatever fits your topic.
-#   - Create a seed file (or files) with some starting content, the same
-#     way the lab pre-populates reference/chinook-sales.md.
-#   - Configure ANY backend you like: StateBackend(), FilesystemBackend(),
-#     or a CompositeBackend() routing between them. It does not need to
-#     match the lab's setup.
+# 要求：
+#   - 挑选一个小型的基于文件的任务：装箱清单、日记、食谱盒、
+#     会议记录，任何适合你主题的内容都可以。
+#   - 创建带有一些初始内容的种子文件（或多个文件），方式与实验
+#     预填充 reference/chinook-sales.md 相同。
+#   - 配置你喜欢的任意后端：StateBackend()、FilesystemBackend()，
+#     或在它们之间进行路由的 CompositeBackend()。不必与实验的设置一致。
 #
-# Example shape (delete this and write your own):
+# 示例结构（删除这段，写你自己的）：
 #   my_dir = Path(__file__).parent / "my_files"
 #   my_dir.mkdir(exist_ok=True)
 #   (my_dir / "notes.md").write_text("...")
 #   backend = FilesystemBackend(root_dir=str(my_dir), virtual_mode=True)
 # ════════════════════════════════════════════════════════════════════════
 
-backend = None  # TODO 1: replace with a StateBackend, FilesystemBackend, or CompositeBackend
+backend = None  # TODO 1：替换为 StateBackend、FilesystemBackend 或 CompositeBackend
 
 
 # ════════════════════════════════════════════════════════════════════════
-# TODO 2: Write the task, and optionally a permission rule.
+# TODO 2：编写任务，并可选地编写一条权限规则。
 #
-# Write a user message that has the agent read your file, then write or
-# edit it. If you want to demonstrate permissions, add one or more
-# FilesystemPermission rules to the permissions list below. Leaving it
-# empty and skipping permissions entirely is also a valid choice.
+# 编写一条让代理读取你的文件、然后写入或编辑它的用户消息。如果你想演示
+# 权限，可以在下面的 permissions 列表中添加一条或多条 FilesystemPermission
+# 规则。将列表留空并完全跳过权限也是一种有效的选择。
 # ════════════════════════════════════════════════════════════════════════
 
-TASK = None  # TODO 2: replace with your own task message
-permissions: list[FilesystemPermission] = []  # TODO 2 (optional): add rules here
+TASK = None  # TODO 2：替换为你自己的任务消息
+permissions: list[FilesystemPermission] = []  # TODO 2（可选）：在这里添加规则
 
 if backend is None:
-    raise NotImplementedError("TODO 1: see the comment block above")
+    raise NotImplementedError("TODO 1：见上方注释块")
 if TASK is None:
-    raise NotImplementedError("TODO 2: see the comment block above")
+    raise NotImplementedError("TODO 2：见上方注释块")
 
 agent = create_deep_agent(
     model=model,

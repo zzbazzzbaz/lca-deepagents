@@ -11,7 +11,7 @@ DB_PATH = Path(__file__).resolve().parent / "chinook.db"
 
 client = SandboxClient()
 ls_sandbox = client.create_sandbox(name=f"lca-deepagents-lab-{uuid4().hex[:8]}")
-print(f"Sandbox: {ls_sandbox.name}  (id: {ls_sandbox.id})")
+print(f"沙箱：{ls_sandbox.name}  （id：{ls_sandbox.id}）")
 
 backend = LangSmithSandbox(sandbox=ls_sandbox)
 
@@ -26,11 +26,11 @@ agent = create_deep_agent(
     model=model,
     backend=backend,
     system_prompt=(
-        "You are a sales data analyst with access to the Chinook music store database "
-        "at /chinook.db. Use sqlite3 and matplotlib to answer questions with charts. "
-        "Install any packages you need with pip before importing them. "
-        "When asked to produce a chart, write a Python script, execute it, and confirm "
-        "the output file was created."
+        "你是一位销售数据分析师，可以访问位于 /chinook.db 的 Chinook 音乐商店数据库。"
+        "使用 sqlite3 和 matplotlib 结合图表回答问题。"
+        "在导入任何包之前，先用 pip 安装你需要的包。"
+        "当被要求生成图表时，编写一个 Python 脚本，执行它，并确认"
+        "输出文件已创建。"
     ),
 )
 
@@ -41,15 +41,14 @@ try:
                 {
                     "role": "user",
                     "content": (
-                        "Query the Chinook database at /chinook.db to get total revenue "
-                        "by genre. Create a clean donut chart showing each genre's share "
-                        "of total sales revenue. Group any genres that individually "
-                        "account for less than 3% of total revenue into a single 'Other' "
-                        "slice. Label each slice with the genre name and percentage. "
-                        "Use a visually distinct color palette, leave a white center hole, "
-                        "and make sure no labels overlap with each other or with the title. "
-                        "Add enough top padding so the title is fully visible. "
-                        "Save the chart to /genre_revenue.png."
+                        "查询位于 /chinook.db 的 Chinook 数据库，计算各流派的"
+                        "总收入。创建一张清晰的环形图，展示每个流派在总销售额"
+                        "中所占的份额。将任何单独占总收入不足 3% 的流派合并到"
+                        "一个“其他”（Other）扇区中。为每个扇区标注流派名称和百分比。"
+                        "使用视觉上区分度高的配色方案，中间留出白色空心圆，"
+                        "并确保任何标签之间或标签与标题之间都不重叠。"
+                        "为标题留出足够的上方内边距，使其完全可见。"
+                        "将图表保存到 /genre_revenue.png。"
                     ),
                 }
             ]
@@ -60,7 +59,7 @@ try:
     png_bytes = ls_sandbox.read("/genre_revenue.png")
     out_path = Path(__file__).parent / "genre_revenue.png"
     out_path.write_bytes(png_bytes)
-    print(f"Chart saved to {out_path}")
+    print(f"图表已保存到 {out_path}")
 
 finally:
     client.delete_sandbox(ls_sandbox.name)

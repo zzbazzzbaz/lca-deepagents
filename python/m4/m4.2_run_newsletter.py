@@ -1,14 +1,14 @@
 # python/m4/m4.2_run_newsletter.py
-"""Run the editor agent and save everything it produces.
+"""运行编辑代理，并把它产出的所有内容保存下来。
 
-Note on file handling: Deep Agents *can* be given real local disk access (via a
-FilesystemBackend), but we deliberately don't. This agent runs on the default
-StateBackend, so its writes land in agent state, not on your machine. Letting an
-agent write to your filesystem is a permission you grant — and shouldn't, when
-the agent is acting on untrusted web-search content. Instead, this trusted host
-code reads the files out of agent state (the "files" channel) after invoke and
-mirrors them to OUT_DIR: the finished newsletter plus each researcher's raw
-/research/<genre>/ archive, so you can inspect what was quarantined there.
+关于文件处理的说明：Deep Agents *可以*获得真实的本地磁盘访问权限
+（通过 FilesystemBackend），但我们刻意不给。这个代理运行在默认的
+StateBackend 上，所以它的写入落在代理状态里，而不是你的机器上。
+允许代理写入你的文件系统是一种需要你授予的权限——而且当代理在根据不可信的
+网页搜索内容行事时，你不应该授予。作为替代，这段受信任的主机代码在 invoke
+之后把文件从代理状态（"files" 通道）中读出来，并把它们镜像到 OUT_DIR：
+包括最终成稿的 newsletter，以及每个研究者原始的 /research/<文体>/ 存档，
+这样你就能检查被隔离在那里的内容。
 """
 
 from pathlib import Path
@@ -19,45 +19,45 @@ OUT_DIR = Path(__file__).resolve().parent / "output"
 OUT_DIR.mkdir(exist_ok=True)
 
 result = agent.invoke(
-    {"messages": [{"role": "user", "content": "Put together this week's newsletter."}]},
+    {"messages": [{"role": "user", "content": "请整理好本周的通讯稿。"}]},
     config={"recursion_limit": 50},
 )
 
-# The editor's final reply (coordination summary).
+# 编辑代理的最终回复（协调总结）。
 print(result["messages"][-1].content)
 
-# Everything the agent produced lives in agent state (not on your disk — it ran
-# in the default StateBackend). Pull it all out and mirror it to OUT_DIR: the
-# editor's newsletter AND each researcher's raw /research/<genre>/ archive.
+# 代理产出的所有内容都存在于代理状态中（不在你的磁盘上——它运行在默认的
+# StateBackend）。把全部内容取出来并镜像到 OUT_DIR：包括编辑代理的
+# newsletter，以及每个研究者原始的 /research/<文体>/ 存档。
 files = result.get("files", {})
 if "/output/newsletter.html" not in files:
-    raise SystemExit("Agent did not write /output/newsletter.html")
+    raise SystemExit("代理没有写入 /output/newsletter.html")
 
 
 def _content(fd) -> str:
-    # FileData entries are dicts keyed by "content" (string, or legacy list).
+    # FileData 条目是以 "content" 为键的字典（字符串，或旧的列表形式）。
     body = fd["content"] if isinstance(fd, dict) else fd
     return "\n".join(body) if isinstance(body, list) else body
 
 
 out_root = OUT_DIR.resolve()
-print("\nWriting agent files to disk:")
+print("\n正在把代理文件写入磁盘：")
 for path in sorted(files):
-    # Map the in-state layout onto OUT_DIR: /output/* lands at the root,
-    # /research/<genre>/* keeps its folder structure.
+    # 把代理状态中的布局映射到 OUT_DIR：/output/* 落在根目录，
+    # /research/<文体>/* 保留其文件夹结构。
     rel = path[len("/output/"):] if path.startswith("/output/") else path.lstrip("/")
     dest = (OUT_DIR / rel).resolve()
 
-    # The file contents are UNTRUSTED web-search text, and the path came from
-    # the agent — so verify the destination stays inside OUT_DIR before writing
-    # (reject any ../ traversal), and only ever write plain text.
+    # 文件内容是【不可信的】网页搜索文本，而且路径来自代理——所以先验证
+    # 目标路径始终落在 OUT_DIR 之内（拒绝任何 ../ 穿越），再写入，
+    # 并且只写纯文本。
     if dest != out_root and out_root not in dest.parents:
-        print(f"  SKIPPED (escapes output dir): {path}")
+        print(f"  已跳过（越出输出目录）：{path}")
         continue
 
     dest.parent.mkdir(parents=True, exist_ok=True)
     body = _content(files[path])
     dest.write_text(body, encoding="utf-8")
-    print(f"  {path}  ->  {dest.relative_to(out_root)}  ({len(body):,} chars)")
+    print(f"  {path}  ->  {dest.relative_to(out_root)}  ({len(body):,} 字符)")
 
-print(f"\nOpen {OUT_DIR / 'newsletter.html'} in your browser to read this week's issue.")
+print(f"\n请在浏览器中打开 {OUT_DIR / 'newsletter.html'} 阅读本周的通讯稿。")

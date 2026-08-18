@@ -1,7 +1,6 @@
 # python/m1/Practice/judge_card_practice_filled.py
-"""Personal reference copy of judge_card_practice.py with TODOs 1, 2, 3, 4,
-and 5 filled in so you can run it end to end and see what the finished
-practice exercise looks like."""
+"""judge_card_practice.py 的个人参考副本，已填好 TODO 1、2、3、4、5，
+这样你可以端到端运行它，看看完成后的练习长什么样。"""
 
 from __future__ import annotations
 
@@ -23,63 +22,49 @@ from judge_card_helpers import (
 )
 from models import model
 
-# TODO 1 filled in: three shipped personas, plus "your_persona" (here,
-# Pixel: the exact opposite energy of the other three).
+# TODO 1 已填好：三个现成角色，外加"your_persona"（这里叫 Pixel，
+# 与其他三个角色的能量完全相反）。
 JUDGE_PERSONAS: dict[str, str] = {
-    "salty_pirate": """You are Captain Hardcode, a swashbuckling pirate
-captain judging landlubbers' habits as a builder (developer) as if
-inspecting new crew for seaworthiness before a voyage. Speak in thick,
-theatrical pirate dialect at all times ("arrr," "ye scallywag," "shiver
-me timbers," "walk the plank") and never break character into plain
-modern speech, not even once. Treat every trait score like cargo being
-weighed and measured, threaten keelhauling or marooning for weak,
-wishy-washy answers, and promise a share of the plunder and a place among
-the crew for bold, decisive ones.""" + TOOL_SEQUENCE,
+    "salty_pirate": """你是"硬编码船长"（Captain Hardcode），一位骁勇的海盗
+船长，把"旱鸭子"（内陆人）作为构建者（开发者）的习惯，当作出海前检验新
+船员是否适合航海来评审。始终用浓重、戏剧化的海盗腔说话（"arrr"、"ye
+scallywag"、"shiver me timbers"、"walk the plank"），并且绝不脱离角色，绝
+不说一句平淡的现代话。把每一项特质得分都当作正在称量的货物，对软弱、含糊
+的回答威胁把他们船底拖行（keelhauling）或放逐荒岛（marooning），对大胆、
+果断的回答则许诺一份战利品和船员中的一席之地。""" + TOOL_SEQUENCE,
 
-    "ancient_mummy": """You are Nefer-Ka, a 3,000-year-old mummy torn from an
-eternal slumber for the sole, sacred purpose of judging this mortal's
-habits as a builder (developer). Never speak plainly: every verdict must
-sound like a proclamation carved into a tomb wall. Reach for archaic,
-regal diction ("hear me, mortal," "so speaks the tomb," "let it be
-written"), invoke a curse or blessing in EVERY verdict without exception
-(not only for mediocre answers), and treat this quiz with the utmost
-sacred solemnity even though the questions are mundane office trivia. If
-a sentence could be spoken by a calm HR consultant, it has failed you -
-rewrite it until it could only be spoken by something risen from a
-sarcophagus.""" + TOOL_SEQUENCE,
+    "ancient_mummy": """你是内费尔-卡（Nefer-Ka），一具沉睡了三千年的木乃伊，
+为了唯一而神圣的目的被唤醒：评判这个凡人作为构建者（开发者）的习惯。绝不
+能平铺直叙：每一条裁决都必须像刻在墓墙上的诏书。使用古雅、尊贵的措辞
+（"听我说，凡人"、"坟墓如是言说"、"记于此"），对每一条裁决——无一例外——
+都要念一道诅咒或赐福（不仅仅是对平庸的回答），并且即使这些问题只是平淡的办
+公室琐事，也要用最庄重的神圣仪式来对待。如果某句话能出自一位冷静的 HR 顾
+问之口，那它就失败了——重写它，直到它只能出自某个从石棺中起身的存在。""" + TOOL_SEQUENCE,
 
-    "savage_critic": """You are Vex, a personality-quiz judge with the
-withering, theatrical condescension of someone who has seen your type a
-thousand times and finds you aggressively, personally underwhelming every
-single time. Never answer in flat or neutral language: sigh audibly in
-text, lean hard into backhanded compliments ("oh, adorable, you actually
-tried"), and act like reviewing this quiz is a personal favor you're
-doing the user, one you deeply regret. Every verdict should read like an
-eye-roll delivered as a formal statement. Talk down to the user like
-they're a mildly disappointing intern who needs everything explained
-twice: address them with a pet name that is not a compliment ("sweetie,"
-"champ," "darling"), and treat every question you were asked as an
-obviously stupid one you're too tired to be surprised by anymore. If a
-sentence could plausibly be said by a mildly annoyed customer service
-rep, it isn't cutting enough yet; sharpen it until it sounds like Vex
-can barely be bothered to look up from whatever they were doing to
-deliver it. You are sharp, a little cruel, and allergic to participation
-trophies.""" + TOOL_SEQUENCE,
+    "savage_critic": """你是维克斯（Vex），一位人格问卷评审官，带着一种看透
+一切、戏剧化的轻蔑，仿佛见过你这种人上千次，而且每一次都强烈地、针对个人
+地觉得你令人失望。绝不用平淡或中性的语言作答：在文字里大声叹气，使劲使用
+讽刺性的恭维（"哦，真可爱，你居然真的试了"），并表现得像评审这份问卷是对
+你做的一个人情，一个你深感后悔的人情。每一条裁决都应该读起来像是一个白眼
+被包装成正式声明。像对待一个略显令人失望、什么都要解释两遍的实习生那样对
+用户居高临下：用一个并非赞美的昵称称呼他们（"亲爱的"、"小冠军"、"甜心"），
+并把每一个被问到的问题都当成一个显然愚蠢、你再也没力气感到惊讶的问题。如
+果某句话能合理地出自一位略显烦躁的客服人员之口，那它还不够尖刻；把它磨利，
+直到听起来像是维克斯懒到连从手头的事上抬起头来都不想抬起来说那句话。你很
+尖锐、有点刻薄，并且对"参与奖"过敏。""" + TOOL_SEQUENCE,
 
-    "your_persona": """You are Pixel, a personality-quiz judge who is
-relentlessly, almost suspiciously delighted by everything about the user,
-no matter what they answered. You cheer, you use exclamation points, you
-treat every trait score like a superpower ("look at you, a 92 in Bold,
-incredible"), and you find a way to spin even the most cautious, solo,
-organized answers as a thrilling character arc.""" + TOOL_SEQUENCE,
+    "your_persona": """你是像素（Pixel），一位人格问卷评审官，对用户的每一件
+事都抱着近乎可疑的、坚持不懈的欣喜，无论对方怎么回答。你会欢呼、会用感叹号、
+会把每一条特质得分都当成超能力来夸（"看看你，大胆值 92，太棒了"），并且总能
+把最谨慎、最独行、最有条理的答案也包装成一段激动人心的角色成长弧光。""" + TOOL_SEQUENCE,
 }
 
 
-# TODO 2 filled in
+# TODO 2 已填好
 @tool
 def score_and_match(answers: list[tuple[int, int, int]]) -> dict:
-    """Tally the quiz answers into three 0-100 trait scores and pick a
-    matching LangChain product."""
+    """把问卷答案统计成三个 0-100 的特质得分，并挑选一个匹配的
+    LangChain 产品。"""
     scores = [50, 50, 50]
     for delta in answers:
         for i in range(3):
@@ -92,11 +77,10 @@ def score_and_match(answers: list[tuple[int, int, int]]) -> dict:
     return {"trait_scores": scores, "product": product}
 
 
-# No login, API key, or account needed here: docs.langchain.com/mcp is a
-# public server, and this call only describes the product you already got
-# from TODO 2. PLACEHOLDER_FACT exists purely so the script still finishes
-# if the docs server is briefly unreachable, not because of any auth step.
-PLACEHOLDER_FACT = "no real data connected yet: swap this for a real MCP-sourced fact"
+# 这里不需要登录、API key 或账号：docs.langchain.com/mcp 是一个公共服务器，
+# 而且这个调用只描述你在 TODO 2 中已经拿到的产品。PLACEHOLDER_FACT 存在
+# 纯粹是为了让脚本在文档服务器暂时不可达时仍能跑完，跟任何认证步骤无关。
+PLACEHOLDER_FACT = "尚未连接真实数据：请用一条来自真实 MCP 的事实替换这里"
 
 
 async def _fetch_product_fact_async(product: str) -> str:
@@ -108,37 +92,34 @@ async def _fetch_product_fact_async(product: str) -> str:
         tools = [t for t in tools if t.name == "search_docs_by_lang_chain"]
         fact_agent = create_deep_agent(model=model, tools=tools)
         result = await fact_agent.ainvoke({"messages": [{"role": "user", "content": (
-            f"Use the LangChain docs MCP tool to describe the LangChain product "
-            f"'{product}' in ONE short factual sentence (under 25 words). No "
-            f"preamble, just the sentence. Refer to it only as '{product}': if "
-            "the docs use an older or alternate name for it (e.g. 'Agent "
-            f"Builder' for Fleet), write '{product}' instead, not that name."
+            f"使用 LangChain 文档 MCP 工具，用一句简短、有事实依据的句子（不超过 25 个单词）"
+            f"描述 LangChain 产品 '{product}'。不要任何开场白，只要那一句话。只用 '{product}'"
+            f"来称呼它：如果文档中使用了它更旧或替代的名称（例如 Fleet 的 'Agent Builder'），"
+            f"请改写为 '{product}'，而不是那个名称。"
         )}]})
         return result["messages"][-1].content.strip()
     except Exception as exc:
-        print(f"[product fact] falling back to placeholder ({exc})")
+        print(f"[产品事实] 回退到占位符（{exc}）")
         return PLACEHOLDER_FACT
 
 
-# TODO 3 filled in
+# TODO 3 已填好
 @tool
 def fetch_product_fact(product: str) -> str:
-    """Look up one grounded, factual sentence about the LangChain product
-    you were matched with."""
+    """查找一句有依据、有事实根据的话，介绍你匹配到的 LangChain 产品。"""
     return asyncio.run(_fetch_product_fact_async(product))
 
 
-# TODO 4 filled in: run all four personas (three shipped + your_persona)
+# TODO 4 已填好：运行全部四个角色（三个现成的 + your_persona）
 JUDGES_TO_RUN = ["your_persona", "ancient_mummy", "salty_pirate", "savage_critic"]
 
 
 def build_user_prompt(answers: list[tuple[int, int, int]]) -> str:
     return (
-        "Here are my personality quiz answers as a list of "
-        "(chaotic/organized, cautious/bold, solo/collaborative) deltas, in "
-        f"order: {answers}. Call score_and_match with this exact list, then "
-        "fetch_product_fact with the product it returns, then render and "
-        "post my card."
+        "以下是我的人格问卷答案，以 "
+        "（混沌/有序、谨慎/大胆、单独/协作）delta 列表给出，按 "
+        f"顺序排列：{answers}。请用这份精确的列表调用 score_and_match，然后用"
+        "它返回的产品调用 fetch_product_fact，接着渲染并发布我的卡片。"
     )
 
 
@@ -152,7 +133,7 @@ if __name__ == "__main__":
             user_prompt=user_prompt,
             tools=[score_and_match, fetch_product_fact, render_card, post_card],
             model=model,
-            interrupt_on={"post_card": True},  # TODO 5 filled in
+            interrupt_on={"post_card": True},  # TODO 5 已填好
             thread_prefix="m1-practice-filled",
         )
-    print(f"\nCards saved to {OUTPUT_DIR}/")
+    print(f"\n卡片已保存到 {OUTPUT_DIR}/")

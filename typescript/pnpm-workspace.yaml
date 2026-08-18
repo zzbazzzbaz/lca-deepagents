@@ -1,6 +1,0 @@
-allowBuilds:
-  canvas: true
-  esbuild: true
-  node: true
-minimumReleaseAgeExclude:
-  - langsmith@0.7.17

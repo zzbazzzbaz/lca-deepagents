@@ -47,8 +47,10 @@ from models import model
 #   (my_dir / "notes.md").write_text("...")
 #   backend = FilesystemBackend(root_dir=str(my_dir), virtual_mode=True)
 # ════════════════════════════════════════════════════════════════════════
-
-backend = None  # TODO 1：替换为 StateBackend、FilesystemBackend 或 CompositeBackend
+file_dir = Path(__file__).parent / "gqt_files"
+file_dir.mkdir(exist_ok=True)
+(file_dir / "1.md").write_text("哈哈哈哈，gqt留")
+backend = FilesystemBackend(root_dir=file_dir, virtual_mode=True)
 
 
 # ════════════════════════════════════════════════════════════════════════
@@ -58,9 +60,13 @@ backend = None  # TODO 1：替换为 StateBackend、FilesystemBackend 或 Compos
 # 权限，可以在下面的 permissions 列表中添加一条或多条 FilesystemPermission
 # 规则。将列表留空并完全跳过权限也是一种有效的选择。
 # ════════════════════════════════════════════════════════════════════════
-
-TASK = None  # TODO 2：替换为你自己的任务消息
-permissions: list[FilesystemPermission] = []  # TODO 2（可选）：在这里添加规则
+TASK = (
+    "1.md中记录了什么？在里面添加一句“hhh langchain留。如果没有权限写入1.md，新建一个md文档写入并命名为8.md"  # TODO 2：替换为你自己的任务消息
+)
+permissions: list[FilesystemPermission] = [
+    FilesystemPermission(operations=["write"], paths=["/1.md"], mode="deny"),
+    FilesystemPermission(operations=["write"], paths=["/*.md"], mode="allow"),
+]
 
 if backend is None:
     raise NotImplementedError("TODO 1：见上方注释块")
@@ -79,3 +85,7 @@ result = agent.invoke(
 )
 
 print(result["messages"][-1].content)
+print("=" * 50)
+print((file_dir / "1.md").read_text())
+print("=" * 50)
+print((file_dir / "8.md").read_text())

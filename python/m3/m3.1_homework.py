@@ -55,6 +55,15 @@ from models import model
 
 def build_turns() -> list[str]:
     """TODO 1：返回你自己的用户消息列表（至少 8 条）。"""
+    return [
+        "我叫gqt，我正在学langchain框架",
+        "我学完了langchain框架但我还是发现不能做东西",
+        "我又开始学langgraph框架",
+        "发现langchain基于langgraph框架",
+        "但是langgraph太低层了，我想要构建高层自主智能体",
+        "于是我开始学习deepagent框架，但我一直在学习，还没有实际产出。我很沮丧",
+        "话说，我叫什么？我之前都学过什么？好像太久了我忘记了，我已经活了两个世纪了",
+    ]
     raise NotImplementedError("TODO 1：见上方注释块")
 
 
@@ -66,7 +75,7 @@ def build_turns() -> list[str]:
 # 本课对 5 轮演示用了 700 并只触发一次；你的数值取决于你写了几轮、每轮多长。
 # ════════════════════════════════════════════════════════════════════════
 
-MAX_INPUT_TOKENS = None  # TODO 2：用你选定的整数阈值替换 None
+MAX_INPUT_TOKENS = 500  # TODO 2：用你选定的整数阈值替换 None
 
 model.profile = {**model.profile, "max_input_tokens": MAX_INPUT_TOKENS}
 

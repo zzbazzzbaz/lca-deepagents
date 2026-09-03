@@ -20,7 +20,9 @@ with open(DB_PATH, "rb") as f:
 
 for upload_result in upload_results:
     if upload_result.error:
-        raise RuntimeError(f"Failed to upload {upload_result.path}: {upload_result.error}")
+        raise RuntimeError(
+            f"Failed to upload {upload_result.path}: {upload_result.error}"
+        )
 
 agent = create_deep_agent(
     model=model,
@@ -55,6 +57,8 @@ try:
         }
     )
     print(result["messages"][-1].content)
+
+    print("=" * 50)
 
     png_bytes = ls_sandbox.read("/genre_revenue.png")
     out_path = Path(__file__).parent / "genre_revenue.png"

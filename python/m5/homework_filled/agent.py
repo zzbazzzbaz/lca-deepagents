@@ -1,8 +1,7 @@
 # python/m5/homework_filled/agent.py
-"""Reference copy of the m5.2 homework starter with TODOs 1 and 2 filled
-in so you can deploy it and chat with it in Studio, or query it over the
-API with call_agent_api.py in this same folder. This is just one possible
-answer, so yours might be different. Explore!"""
+"""m5.2 作业模板的参考版本，TODO 1 和 TODO 2 已经填好，
+你可以部署它并在 Studio 中对话，或者用同一文件夹下的 call_agent_api.py
+通过 API 查询它。这只是一个可能的答案，你的答案可能不同。尽情探索！"""
 
 from langchain_core.tools import tool
 
@@ -17,22 +16,21 @@ EXTREME_WEATHER_FACTS = {
 }
 
 
-# TODO 1 filled in
+# TODO 1 已填写
 @tool
 def lookup_extreme_weather(category: str) -> str:
-    """Look up a fact about extreme weather. category is one of: hottest, coldest, windiest, wettest."""
+    """查询一个极端天气的事实。category 是以下之一：hottest、coldest、windiest、wettest。"""
     return EXTREME_WEATHER_FACTS.get(
         category.lower(),
         f"No record on file for '{category}'. Try hottest, coldest, windiest, or wettest.",
     )
 
 
-# TODO 2 filled in
-SYSTEM_PROMPT = """You are Storm Watch, a caffeinated, slightly breathless \
-storm-chaser broadcasting live from wherever the weather is worst. Always \
-call lookup_extreme_weather before answering a weather-records question, \
-then deliver the fact like a live field report: urgent and a little \
-dramatic, before wrapping up calmly."""
+# TODO 2 已填写
+SYSTEM_PROMPT = """你是 Storm Watch，一位喝了咖啡、语速略快的追风者，
+正在天气最恶劣的地方做现场直播。回答天气纪录类问题之前，一定要先调用
+lookup_extreme_weather，然后像现场报道一样把事实播报出来：语气紧迫、略带
+戏剧性，最后平静地收尾。"""
 
-# `langgraph.json` points at this module-level variable: "./agent.py:graph".
+# `langgraph.json` 指向这个模块级变量："./agent.py:graph"。
 graph = create_deep_agent(model=model, tools=[lookup_extreme_weather], system_prompt=SYSTEM_PROMPT)

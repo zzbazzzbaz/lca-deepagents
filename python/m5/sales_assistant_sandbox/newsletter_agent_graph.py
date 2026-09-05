@@ -1,36 +1,29 @@
 # python/m5/sales_assistant_sandbox/newsletter_agent_graph.py
-"""newsletter-agent: a standalone graph, launched as an async subagent.
+"""newsletter-agent：一个独立的图，作为异步子代理启动。
 
-Registered as its own entry in langgraph.json so the main agent's
-`AsyncSubAgentMiddleware` can launch it via the LangGraph SDK and return
-immediately, instead of blocking on an in-process subagent call.
+它在 langgraph.json 中注册为独立的条目，这样主代理的 `AsyncSubAgentMiddleware`
+可以通过 LangGraph SDK 启动它并立即返回，而不是阻塞在进程内子代理调用上。
 
-Unlike the earlier design (see git history: genre_researcher_graph.py), this
-graph does the FULL newsletter job itself — researching every genre and
-assembling the finished HTML — rather than being one of four parallel async
-launches the main agent has to fan back in. Internally it delegates to a
-genre-researcher subagent the ordinary, SYNCHRONOUS way (the `task` tool,
-same mechanism the main agent's other specialists use): those calls happen
-in-process, in parallel, within this graph's own single run, so there is
-nothing to fan in across threads.
+与早期的设计不同（参见 git 历史：genre_researcher_graph.py），这个图自己完成整个
+新闻通讯任务——调研每一个类型并组装完成后的 HTML——而不是作为主代理必须回收的
+四个并行异步启动之一。在内部，它通过普通的、同步的方式（`task` 工具，与主代理其他
+专家使用的机制相同）委托给 genre-researcher 子代理：这些调用在这个图自己的单次运行内、
+进程内并行发生，因此跨线程没有任何需要回收的东西。
 
-No completion-notification middleware here (see git history:
-completion_notifier.py) — the main agent finds out this task is done the
-ordinary way, by checking `check_async_task`/`list_async_tasks` the next time
-it's asked, rather than being woken by a cross-thread run. That's what lets
-this graph be a plain, static object instead of a per-run async factory.
+这里没有完成通知中间件（参见 git 历史：completion_notifier.py）——主代理以普通方式
+得知该任务完成：在下一次被问到时检查 `check_async_task`/`list_async_tasks`，而不是
+被一次跨线程的运行唤醒。正是这一点使得这个图可以是一个普通的静态对象，而不是
+按运行生成的异步工厂。
 
-Storage: a `StoreBackend` namespaced by this run's own thread_id, resolved
-lazily via `get_config()` inside the namespace lambda — called only when the
-backend actually does a store operation during a real run, not at graph
-construction time, so no factory/`config` param is needed to build this
-graph. Each `start_async_task` call creates a fresh thread here, so that
-thread_id is already a unique, collision-free namespace — no cross-graph ID
-forwarding needed. Omitting `store=` resolves to `get_store()` at runtime,
-which is the same store instance the main graph uses (both graphs share one
-deployment). The genre-researcher subagent inherits this same backend
-(subagents inherit their parent's backend unless they set their own), so its
-`/research/<genre>/sources.md` dumps land in this run's own namespace too.
+存储：一个由本次运行自己的 thread_id 做命名空间的 `StoreBackend`，通过命名空间
+lambda 内的 `get_config()` 惰性解析——只在真实运行期间后端真正执行存储操作时才被
+调用，而不是在构建图时调用，因此构建这个图不需要 factory/`config` 参数。每次
+`start_async_task` 调用都会在这里创建一个全新的线程，所以该 thread_id 已经是一个
+唯一、无冲突的命名空间——无需跨图转发 ID。省略 `store=` 会在运行时解析为
+`get_store()`，也就是主图使用的同一个 store 实例（两个图共享一次部署）。
+genre-researcher 子代理继承这同一个后端（子代理继承其父代理的后端，除非它们自己
+设置），因此它的 `/research/<genre>/sources.md` 转储也会落到本次运行自己的
+命名空间中。
 """
 
 from __future__ import annotations
@@ -45,12 +38,10 @@ from tools.html import markdown_to_html
 
 from models import model, strong_model
 
-# This module is always imported by the langgraph platform (it's a
-# registered graph in langgraph.json) regardless of whether the main agent
-# ever exposes the launch tool for it — so importing tools.search (which
-# instantiates a Tavily client from TAVILY_API_KEY at import time) has to
-# stay conditional here too, matching agent.py's own `_enable_search` guard,
-# even though there's no factory body left to defer the import inside.
+# langgraph 平台总会导入此模块（它是 langgraph.json 中注册的图），无论主代理
+# 是否为其暴露启动工具——所以导入 tools.search（在导入时用 TAVILY_API_KEY 实例化
+# Tavily 客户端）在这里也必须保持条件导入，与 agent.py 自身的 `_enable_search`
+# 守卫保持一致，尽管这里已经没有工厂函数体可以推迟导入。
 _enable_search = bool(os.environ.get("TAVILY_API_KEY"))
 if _enable_search:
     from tools.search import internet_search
@@ -59,35 +50,29 @@ if _enable_search:
 else:
     _genre_researcher_tools = []
 
-NEWSLETTER_AGENT_PROMPT = """You assemble Chinook's weekly "This Week in \
-Music" customer newsletter. You run in the background — the sales assistant \
-already told Jane you're working and will hand her the finished result the \
-moment you're done.
+NEWSLETTER_AGENT_PROMPT = """你负责组装 Chinook 的每周客户新闻通讯 "This Week in \
+Music"。你在后台运行——销售助手已经告诉 Jane 你正在工作，并且一完成就会把最终结果 \
+交给她。
 
-You will be given a list of genres to cover. For EACH genre, delegate to the \
-genre-researcher subagent — call it once per genre, all in this same turn, \
-so the research happens in parallel — and collect its returned segment.
+你会获得一个要覆盖的音乐类型列表。对于每个类型，委托给 genre-researcher 子代理——\
+每个类型调用一次，全部在同一回合内完成，这样调研就会并行进行——并收集它返回的小节。
 
-Once every genre-researcher call has returned:
-1. Assemble one Markdown document from the genres that succeeded: a \
-   "# This Week in Music" title, a one-sentence intro, then each genre's \
-   segment in the order given. If a genre's research failed, skip it and \
-   add one short line noting which genre(s) didn't make it this week — \
-   don't leave the newsletter looking unfinished, and don't silently drop \
-   the fact that something's missing. If every genre failed, don't produce \
-   a newsletter at all — reply with a single plain sentence saying research \
-   failed for every genre this week, and stop there.
-2. Call `markdown_to_html` on the assembled Markdown.
+一旦每个 genre-researcher 调用都已返回：
+1. 用成功的小节组装成一份 Markdown 文档：一个 "# This Week in Music" 标题、一句 \
+   引言，然后按给定顺序排列每个类型的小节。如果某个类型的调研失败了，跳过它并加 \
+   一行简短说明指出哪个（些）类型本周未能完成——不要留下看起来未完成的新闻通讯，\
+   也不要默默隐瞒有内容缺失这一事实。如果所有类型都失败了，就完全不要产出新闻通讯\
+   ——只回复一句朴素的句子说明本周每个类型的调研都失败了，然后就此打住。
+2. 对组装好的 Markdown 调用 `markdown_to_html`。
 
-Reply with ONLY the tool's returned HTML — nothing before it, nothing after \
-it, no commentary. Your reply is written directly to a file verbatim; any \
-extra sentence you add around the HTML ends up inside that file too."""
+回复时只带工具返回的 HTML——前后都不要有别的，也不要任何评论。你的回复会逐字直接 \
+写入一个文件；你在 HTML 周围添加的任何多余句子最终也会落到那个文件里。"""
 
 _genre_researcher = {
     "name": "genre-researcher",
     "description": (
-        "Research one music genre and write a newsletter segment about "
-        "what's new in it. Call once per genre, in parallel."
+        "调研一个音乐类型，并围绕其中有什么新东西撰写一段新闻通讯小节。"
+        "每个类型调用一次，并行进行。"
     ),
     "system_prompt": GENRE_PROMPT,
     "tools": _genre_researcher_tools,

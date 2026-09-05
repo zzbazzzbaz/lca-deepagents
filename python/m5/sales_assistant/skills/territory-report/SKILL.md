@@ -1,37 +1,34 @@
 ---
 name: territory-report
-description: "Build a report on the rep's sales territory — revenue, top customers, top genres, and trends for Jane's book of business — with a chart. Use when asked for a territory report, sales summary, performance numbers, or 'how is my book doing'."
+description: "为销售代表的销售区域生成报告——Jane 客户盘子的收入、头部客户、头部流派和趋势——并配图表。当被要求提供区域报告、销售摘要、业绩数字，或询问"我的盘子经营得如何"时使用。"
 ---
 
-# Territory Report
+# 区域报告
 
-A metrics task. The numbers come from the database; the chart is rendered
-from them.
+一项指标任务。数字来自数据库；图表由这些数字渲染。
 
-## 1. Gather the metrics
+## 1. 收集指标
 
-Ask **chinook-analyst** for Jane's book of business (`SupportRepId = 3`):
+请 **chinook-analyst** 提供 Jane 的客户盘子（`SupportRepId = 3`）数据：
 
-- Total revenue and number of invoices.
-- Top customers by revenue (with amounts).
-- Revenue by genre (for Jane's customers).
-- Any obvious trend (e.g. revenue by year, if useful).
+- 总收入与发票数量。
+- 按收入排名的头部客户（含金额）。
+- 按流派统计的收入（针对 Jane 的客户）。
+- 任何明显的趋势（例如按年份的收入，如果有用的话）。
 
-Get exact figures; do the arithmetic with the **code interpreter** if you need
-to combine results.
+获取精确的数字；如果需要合并结果，用**代码解释器**做算术。
 
-## 2. Write the report
+## 2. 撰写报告
 
-- Use the code interpreter to get today's date (Python: `import datetime; datetime.date.today().isoformat()`).
-- `write_file` a clear Markdown report to `/outputs/territory_report-<date>.md`:
-  headline totals, a top-customers list, and a revenue-by-genre table.
+- 用代码解释器获取今天的日期（Python：`import datetime; datetime.date.today().isoformat()`）。
+- 用 `write_file` 将一份清晰的 Markdown 报告写入 `/outputs/territory_report-<date>.md`：
+  头条总额、头部客户列表，以及按流派收入的表格。
 
-## 3. Chart
+## 3. 图表
 
-Call `render_pie_chart` with the revenue-by-genre labels and values, saved as
-`territory_chart.png`. Reference the image in the report.
+调用 `render_pie_chart`，传入按流派收入的标签和数值，保存为
+`territory_chart.png`。在报告中引用该图片。
 
-## Done
+## 完成
 
-Tell Jane where the report and chart were saved, with the headline revenue
-number.
+告诉 Jane 报告和图表保存在哪里，并给出头条收入数字。

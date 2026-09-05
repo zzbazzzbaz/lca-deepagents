@@ -1,20 +1,17 @@
 # python/m5/async_lab/specialized_agent/agent.py
-"""M5.4 Lab: the "specialized" deployment.
+"""M5.4 实验："专用"部署。
 
-THE IDEA
-This is a second, independent deployment, not a folder inside the shared
-course environment. It has its own pyproject.toml and its own model setup,
-so pandas (needed for the analysis tool below) is installed only here,
-never in the shared environment every other lab in the course depends on.
-Its langgraph.json also declares "dependencies": ["."] instead of the usual
-["../.."], which is what makes that isolation real.
+核心思想
+这是第二个独立的部署，不是共享课程环境下的一个文件夹。它有自己独立的
+pyproject.toml 和模型配置，因此 pandas（下面这个分析工具需要它）只在这里
+安装，永远不会装进课程中其他实验依赖的共享环境。它的 langgraph.json 也声明了
+"dependencies": ["."] 而不是通常的 ["../.."]，正是这一点让隔离成为现实。
 
-RUN
+运行
   cd python/m5/async_lab/specialized_agent
   uv run langgraph dev --port 2025
-Leave this running, then start ../main_agent in a second terminal. The main
-agent reaches this one over HTTP at http://127.0.0.1:2025, exactly like any
-other remote deployment.
+让它保持运行，然后在第二个终端启动 ../main_agent。主代理通过 HTTP 在
+http://127.0.0.1:2025 访问这个代理，和访问任何其他远程部署完全一样。
 """
 
 import time
@@ -37,12 +34,11 @@ SALES = pd.DataFrame(
 
 @tool
 def analyze_sales(group_by: str = "region") -> str:
-    """Run a full sales breakdown, grouped by "region" or by "product", ranked highest revenue first.
+    """运行完整的销售分析，按 "region" 或 "product" 分组，按营收从高到低排序。
 
-    This is a slow, heavyweight analysis job, not something you'd want
-    blocking the main agent's own model calls.
+    这是一个缓慢、重量级的分析任务，不适合阻塞主代理自身的模型调用。
     """
-    time.sleep(20)  # stands in for a genuinely slow job (a big pandas pipeline, a model call, etc.)
+    time.sleep(20)  # 用来模拟一个真正缓慢的任务（大型 pandas 管道、模型调用等）
     key = group_by if group_by in ("region", "product") else "region"
     grouped = SALES.groupby(key)[["units_sold", "revenue"]].sum().sort_values("revenue", ascending=False)
     lines = [
@@ -54,5 +50,5 @@ def analyze_sales(group_by: str = "region") -> str:
 
 model = ChatAnthropic(model="claude-haiku-4-5")
 
-# langgraph.json points at this module-level variable: "./agent.py:graph"
+# langgraph.json 指向这个模块级变量："./agent.py:graph"
 graph = create_deep_agent(model=model, tools=[analyze_sales])

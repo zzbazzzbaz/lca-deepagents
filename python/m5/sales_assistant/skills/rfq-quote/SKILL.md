@@ -1,62 +1,57 @@
 ---
 name: rfq-quote
-description: "Process an incoming request for quote (RFQ) from a customer: read the email, look up the customer and catalogue prices, compute a quote, have it reviewed, draft the reply, and log it. Use whenever a customer asks for a price, a quote, or to license/buy a batch of tracks."
+description: "处理客户发来的报价请求（RFQ）：阅读邮件，查找客户与目录价格，计算报价，交由审核，起草回复，并记录日志。每当客户询问价格、报价，或想授权/购买一批曲目时使用。"
 ---
 
-# Processing a Request for Quote
+# 处理报价请求
 
-Follow these steps in order. Keep a todo list so Jane can see progress.
+按顺序执行以下步骤。维护一个待办列表，让 Jane 可以看到进度。
 
-## 1. Read the request
+## 1. 阅读请求
 
-- Ask **inbox-manager** to find the request and read it in full. Pull out: who
-  is asking, their company/email, and exactly what they want (which
-  genres/tracks, how many of each).
+- 请 **inbox-manager** 找到请求并完整阅读。提取：谁在询问、
+  他们的公司/邮箱，以及他们确切想要什么（哪些流派/曲目、
+  每种多少首）。
 
-## 2. Identify the customer
+## 2. 识别客户
 
-- Ask **chinook-analyst** to find the customer by email (and name as a
-  fallback).
-- **If they are not in the system**, ask chinook-analyst to add them with
-  `add_customer`. The system pauses automatically for Jane to approve — the
-  analyst should just make the call, not ask in prose. Once approved, continue.
+- 请 **chinook-analyst** 按邮箱查找客户（姓名作为后备）。
+- **如果客户不在系统中**，请 chinook-analyst 用 `add_customer`
+  添加他们。系统会自动暂停等待 Jane 批准——分析师直接调用即可，
+  不要先用文字请求。批准后继续。
 
-## 3. Get the prices
+## 3. 获取价格
 
-- Ask **chinook-analyst** for the unit prices needed:
-  - For "N tracks in genre X": the count of available tracks and the standard
-    `UnitPrice` for that genre (tracks are normally $0.99; verify, don't assume).
-  - For "best-selling tracks": ask the analyst for the top sellers by quantity.
-- Get real numbers from the database; never guess a price.
+- 请 **chinook-analyst** 提供所需的单价：
+  - 对于"X 流派 N 首曲目"：该流派可用曲目数量以及该流派的
+    标准 `UnitPrice`（曲目通常为 0.99 美元；核实，不要臆测）。
+  - 对于"最畅销曲目"：请分析师按销量给出最畅销的曲目。
+- 从数据库获取真实数字；永远不要猜测价格。
 
-## 4. Compute the quote (exactly)
+## 4. 计算报价（精确）
 
-- Use the **code interpreter** to do the arithmetic — quantities × unit prices,
-  any line discounts, and the total. Never hand-add money.
-- A reasonable default volume discount: 10% off when the order is 50+ tracks.
-  State the discount explicitly in the quote.
+- 使用**代码解释器**进行算术——数量 × 单价、任何行折扣和总额。
+  永远不要手工加钱。
+- 一个合理的默认批量折扣：订单满 50 首曲目打 9 折。
+  在报价中明确说明该折扣。
 
-## 5. Have it reviewed
+## 5. 送交审核
 
-- Send the line items and totals to **quote-reviewer**. Apply its corrections
-  before drafting.
+- 把明细行和总额发给 **quote-reviewer**。起草前应用其更正。
 
-## 6. Draft the reply
+## 6. 起草回复
 
-- Write a short, friendly reply from Jane: thank them, list each line
-  (description, qty, unit price, line total), show any discount and the grand
-  total, and offer next steps.
-- Ask **inbox-manager** to save it as a draft to the sender, passing the
-  subject and the full body. The system pauses automatically for Jane to
-  approve or edit the wording before it's saved — don't ask for permission in a
-  message first. Drafts are never auto-sent.
+- 以 Jane 的口吻写一封简短、友好的回复：感谢对方，列出每一行
+  （描述、数量、单价、行小计），显示任何折扣和总价，并提供后续步骤。
+- 请 **inbox-manager** 将其保存为发给发件人的草稿，传入主题和
+  完整正文。系统会自动暂停等待 Jane 批准或修改措辞后再保存——
+  不要先发消息请求许可。草稿绝不会自动发送。
 
-## 7. Log it
+## 7. 记录日志
 
-- Append one line to `/outputs/quotes_ledger.md` recording: date, customer,
-  items summary, total, and the draft id. Create the file with a header row if
-  it doesn't exist yet.
+- 向 `/outputs/quotes_ledger.md` 追加一行，记录：日期、客户、
+  条目摘要、总额和草稿 id。如果文件还不存在，先创建带表头的文件。
 
-## Done
+## 完成
 
-Tell Jane the draft is in her drafts folder and summarize the quote total.
+告诉 Jane 草稿在她的草稿文件夹中，并总结报价总额。

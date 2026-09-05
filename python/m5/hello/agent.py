@@ -1,14 +1,13 @@
 # python/m5/hello/agent.py
-"""A minimal deep agent, exposed as a graph for `langgraph dev`.
+"""一个极简的深度代理（deep agent），以图（graph）的形式暴露给 `langgraph dev`。
 
-This is the whole agent: a model, nothing else. The point of this lab is the
-*deployment*, not the agent — so we keep the agent as small as it gets and let
-`langgraph dev` serve it over HTTP.
+整个代理就是：一个模型，除此之外什么都没有。本实验的重点是*部署*，
+而不是代理本身——所以我们把代理做到最小，让 `langgraph dev` 通过 HTTP 提供服务。
 """
 
 from deepagents import create_deep_agent
 
 from models import model
 
-# `langgraph.json` points at this module-level variable: "./agent.py:graph".
+# `langgraph.json` 指向这个模块级变量："./agent.py:graph"。
 graph = create_deep_agent(model=model)

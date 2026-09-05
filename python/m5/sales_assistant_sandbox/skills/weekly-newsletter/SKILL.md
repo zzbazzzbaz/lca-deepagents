@@ -1,65 +1,58 @@
 ---
 name: weekly-newsletter
-description: "Produce the weekly 'This Week in Music' customer newsletter by researching the distributor's top genres and assembling a styled HTML page. Use when asked to create, write, or send the weekly newsletter or a music-news roundup."
+description: "通过调研分销商的头部音乐类型并组装一个带样式的 HTML 页面，产出每周的 'This Week in Music' 客户新闻通讯。当被要求创建、撰写或发送每周新闻通讯或音乐新闻汇总时使用。"
 ---
 
-# Weekly Newsletter
+# 每周新闻通讯
 
-A background job. Launch it, then get out of the way — newsletter-agent
-researches every genre and assembles the finished HTML itself.
+一个后台作业。启动它，然后让开——newsletter-agent 会调研每个类型并自己组装
+完成后的 HTML。
 
-## 1. Pick the genres
+## 1. 挑选类型
 
-- If Jane named genres, use those. Otherwise ask **chinook-analyst** for the
-  top 4 genres by revenue across the catalogue and feature those.
+- 如果 Jane 指定了类型，就用那些。否则请 **chinook-analyst** 按营收给出整个
+  目录中的前 4 个类型，并推荐那些。
 
-## 2. Launch in the background
+## 2. 在后台启动
 
-- Call `start_async_task(subagent_type="newsletter-agent", description=...)`
-  **once**, with the genre list in `description` (e.g. "Research and
+- 调用 `start_async_task(subagent_type="newsletter-agent", description=...)`
+  **一次**，把类型列表放在 `description` 中（例如 "Research and
   assemble this week's newsletter for these genres: Rock, Latin, Jazz,
-  Classical"). It returns a task ID immediately; it does not block.
-- Tell Jane the newsletter is being put together in the background, then
-  **stop**. Do not poll — check on it the next time she asks.
-- Do **not** research genres or assemble the newsletter yourself — that's
-  entirely newsletter-agent's job.
+  Classical"）。它立即返回一个任务 ID；不会阻塞。
+- 告诉 Jane 新闻通讯正在后台制作中，然后**停下**。不要轮询——等她下次询问时
+  再检查。
+- **不要**自己调研类型或组装新闻通讯——那完全是 newsletter-agent 的工作。
 
-## 3. When asked whether it's ready
+## 3. 当被问到是否就绪时
 
-- Get the task_id: call `list_async_tasks()` and read the `task_id:` field for
-  the newsletter-agent entry. Don't rely on the task_id from earlier in the
-  conversation — it may have scrolled out of context or been summarized away;
-  `list_async_tasks` reads it from durable state, not memory.
-- Call `check_async_task(task_id)`.
-- If `status` isn't terminal yet (`success` or `error`), report progress to
-  Jane and stop — check again the next time she asks.
-- If `status` is `error`, tell Jane the newsletter couldn't be put together
-  this week and stop — there's no HTML to save.
-- If `status` is `success`, `result` is the finished HTML, verbatim — no
-  markdown conversion needed here, newsletter-agent already did that.
-  Continue to step 4 immediately, in the same turn — don't ask Jane for
-  permission first. She already asked for the newsletter back in step 1; a
-  completed background job isn't a new decision that needs re-confirming.
+- 获取 task_id：调用 `list_async_tasks()` 并读取 newsletter-agent 条目的
+  `task_id:` 字段。不要依赖对话早先出现的 task_id——它可能已滚出上下文或被
+  摘要掉；`list_async_tasks` 从持久状态读取它，而不是从记忆读取。
+- 调用 `check_async_task(task_id)`。
+- 如果 `status` 还不是终态（`success` 或 `error`），向 Jane 汇报进度并停下——
+  等她下次询问时再检查。
+- 如果 `status` 是 `error`，告诉 Jane 本周新闻通讯无法制作，然后停下——
+  没有可保存的 HTML。
+- 如果 `status` 是 `success`，`result` 就是完成后的 HTML，逐字原样——
+  这里无需再做 Markdown 转换，newsletter-agent 已经做过了。
+  在同一回合内立即继续第 4 步——不要先征求 Jane 的许可。她在第 1 步时
+  就已经要求制作新闻通讯了；一个已完成的后台作业不是需要重新确认的新决策。
 
-## 4. Save (once)
+## 4. 保存（只保存一次）
 
-- You can be asked more than once for the same task_id (e.g. Jane asks "is
-  it ready?" again after you already saved it) — don't save a duplicate
-  file. Check deterministically, not from conversation memory (which can be
-  summarized away): call `glob("/outputs/newsletter-*-<task_id, first 8
-  chars>.html")`. If that already matches a file, tell Jane it's already
-  saved at that path and stop.
-- Otherwise, use the code interpreter to get a timestamp:
-  `new Date().toISOString().slice(0, 19).replace(/:/g, '-')` — this is
-  date-and-time, not just the date, so a genuinely new newsletter request
-  later the same day produces a new file instead of overwriting the last
-  one.
-- `write_file` the HTML from step 3 **exactly as returned** — no edits, no
-  added commentary — to
-  `/outputs/newsletter-<timestamp>-<task_id, first 8 chars>.html`.
+- 同一个 task_id 可能被询问多次（例如 Jane 在你已经保存之后再次问"好了吗？"）——
+  不要保存重复文件。要确定性地检查，而不是依赖对话记忆（它可能被摘要掉）：
+  调用 `glob("/outputs/newsletter-*-<task_id, first 8 chars>.html")`。
+  如果已经有匹配的文件，告诉 Jane 它已保存在该路径，然后停下。
+- 否则，用代码解释器获取时间戳：
+  `new Date().toISOString().slice(0, 19).replace(/:/g, '-')` ——这是日期加时间，
+  而不仅仅是日期，这样同一天稍后真正的新新闻通讯请求会产生一个新文件，
+  而不是覆盖上一个。
+- 把第 3 步的 HTML **原样**写入 `write_file`——不做编辑、不加评论——
+  保存到 `/outputs/newsletter-<timestamp>-<task_id, first 8 chars>.html`。
 
-## Done
+## 完成
 
-Tell Jane where the newsletter was saved. If the HTML you just saved
-mentions a genre that didn't make it in (newsletter-agent notes this itself
-when a genre's research fails), pass that along in your own words.
+告诉 Jane 新闻通讯保存到了哪里。如果你刚保存的 HTML 提到某个类型没能入选
+（当某个类型的调研失败时 newsletter-agent 自己会注明这一点），用你自己的话
+转达这一信息。

@@ -1,10 +1,9 @@
 # python/m5/tools/html.py
-"""Render the weekly newsletter Markdown into a styled, sanitized HTML page.
+"""把周报的 Markdown 渲染成带样式、经过净化的 HTML 页面。
 
-Belongs to the main agent. The HTML shell is a fixed, trusted template; the
-newsletter body is derived from untrusted web-search text, so it is run through
-an allowlist sanitizer (nh3) before it goes into the page — stripping any
-<script>, onerror=, etc. that a search result might have smuggled in.
+属于主代理。HTML 外壳是一个固定、可信的模板；新闻稿正文来自
+不可信的网络搜索文本，因此在进入页面之前会经过白名单净化器
+（nh3）处理——清除搜索结果可能混入的任何 <script>、onerror= 等。
 """
 
 from __future__ import annotations
@@ -37,10 +36,10 @@ _HTML_TEMPLATE = """<!doctype html>
 
 @tool
 def markdown_to_html(markdown_text: str, title: str = "This Week in Music") -> str:
-    """Convert a Markdown newsletter into a complete, styled HTML page.
-    Returns the full HTML document as a string."""
+    """将 Markdown 新闻稿转换为完整的、带样式的 HTML 页面。
+    返回完整的 HTML 文档字符串。"""
     body = md.markdown(markdown_text, extensions=["tables", "fenced_code"])
-    # The body is built from untrusted web search, so allowlist-sanitize it
-    # before rendering. The template itself is trusted and left intact.
+    # 正文来自不可信的网络搜索，因此在渲染之前进行白名单净化。
+    # 模板本身是可信的，保持原样。
     body = nh3.clean(body)
     return _HTML_TEMPLATE.format(title=title, body=body)

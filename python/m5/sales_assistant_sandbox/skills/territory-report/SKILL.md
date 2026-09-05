@@ -1,53 +1,45 @@
 ---
 name: territory-report
-description: "Build a report on the rep's sales territory — revenue, top customers, top genres, and trends for Jane's book of business — with a chart. Use when asked for a territory report, sales summary, performance numbers, or 'how is my book doing'."
+description: "构建一份销售代表的区域销售报告——Jane 客户业务的营收、头部客户、头部类型和趋势——并附图表。当被要求提供区域报告、销售摘要、业绩数据，或询问'我的客户业务怎么样了'时使用。"
 ---
 
-# Territory Report
+# 区域报告
 
-A metrics task. The numbers come from the database; the chart is rendered
-from them.
+一个指标类任务。数字来自数据库；图表由它们渲染而成。
 
-## 1. Gather the metrics
+## 1. 收集指标
 
-Ask **chinook-analyst** for Jane's book of business (`SupportRepId = 3`):
+请 **chinook-analyst** 提供 Jane 的客户业务（`SupportRepId = 3`）数据：
 
-- Total revenue and number of invoices.
-- Top customers by revenue (with amounts).
-- Revenue by genre (for Jane's customers).
-- Any obvious trend (e.g. revenue by year, if useful).
+- 总营收和发票数量。
+- 按营收排名的头部客户（带金额）。
+- 按类型的营收（针对 Jane 的客户）。
+- 任何明显的趋势（例如按年份的营收，如果有用的话）。
 
-Get exact figures; do the arithmetic with the **code interpreter** if you need
-to combine results.
+获取精确数字；如果需要合并结果，用**代码解释器**做算术。
 
-## 2. Write the report
+## 2. 撰写报告
 
-- Use the code interpreter to get a timestamp:
-  `new Date().toISOString().slice(0, 19).replace(/:/g, '-')` — this is
-  date-and-time, not just the date, so a report requested again later the
-  same day doesn't silently overwrite the earlier one.
-- `write_file` a clear Markdown report to
-  `/outputs/territory_report-<timestamp>.md`: headline totals, a
-  top-customers list, and a revenue-by-genre table.
+- 用代码解释器获取时间戳：
+  `new Date().toISOString().slice(0, 19).replace(/:/g, '-')` ——这是日期加时间，
+  而不仅仅是日期，这样同一天稍后再次请求的报告不会静默覆盖早先的那份。
+- 用 `write_file` 把一份清晰的 Markdown 报告写到
+  `/outputs/territory_report-<timestamp>.md`：头条总额、头部客户列表，
+  以及一张按类型营收的表格。
 
-## 3. Chart
+## 3. 图表
 
-Write a short Python script with `write_file` that plots the revenue-by-genre
-figures as a pie chart with matplotlib and saves it to
-`/outputs/territory_chart-<timestamp>.png` (same timestamp as step 2), then
-run it with `execute` (installing matplotlib first if it isn't already
-available). Reference the image in the report using just the bare filename
-(e.g. `![Revenue by Genre](territory_chart-<timestamp>.png)`), not the
-absolute `/outputs/...` path — when Jane downloads the report and chart,
-both land together in the same local folder with no `outputs` subdirectory,
-so a relative filename is what actually resolves; the absolute path is only
-correct for the chat-reply embed below.
+用 `write_file` 编写一个简短的 Python 脚本，用 matplotlib 把按类型营收的数据
+绘制成饼图，并保存到 `/outputs/territory_chart-<timestamp>.png`（与第 2 步使用
+相同的时间戳），然后用 `execute` 运行它（如果 matplotlib 尚未安装，先安装）。
+在报告中引用图片时只使用裸文件名（例如 `![Revenue by Genre](territory_chart-<timestamp>.png)`），
+而不要用绝对的 `/outputs/...` 路径——当 Jane 下载报告和图表时，两者会一起落在
+同一个本地文件夹中，没有 `outputs` 子目录，因此相对文件名才能真正解析；
+绝对路径只对下面聊天回复中的内嵌图片才是正确的。
 
-## Done
+## 完成
 
-Tell Jane where the report and chart were saved, with the headline revenue
-number. Embed the chart in your reply itself as a Markdown image —
-`![Revenue by Genre](/outputs/territory_chart-<timestamp>.png)` — using
-that exact absolute path (the same timestamped filename from step 3), not
-just mentioning the filename as text, so it renders inline in the chat
-instead of only showing up as a download link.
+告诉 Jane 报告和图表保存到了哪里，并附上头条营收数字。在回复中把图表本身作为
+Markdown 图片内嵌——`![Revenue by Genre](/outputs/territory_chart-<timestamp>.png)`——
+使用该精确的绝对路径（第 3 步中相同的时间戳文件名），而不仅仅在文本中提及文件名，
+这样它能在聊天中直接渲染，而不是只显示为一个下载链接。

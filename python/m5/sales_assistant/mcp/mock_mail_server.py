@@ -1,14 +1,14 @@
 # python/m5/sales_assistant/mcp/mock_mail_server.py
-"""A local, offline mock mail MCP server.
+"""一个本地、离线的模拟邮件 MCP 服务器。
 
-Exposes three tools over HTTP (streamable-http transport) on port 5002:
+通过 HTTP（streamable-http 传输）在端口 5002 上暴露三个工具：
 
-    mail_list_messages(query)            -> summaries of inbox mail
-    mail_read_message(message_id)        -> the full body of one message
-    mail_create_draft(to, subject, body) -> save a reply to the drafts folder
+    mail_list_messages(query)            -> 收件箱邮件的摘要
+    mail_read_message(message_id)        -> 单条消息的完整正文
+    mail_create_draft(to, subject, body) -> 把回复保存到草稿文件夹
 
-State is a small JSON file managed by mail_store.py. Started by start.sh
-before langgraph dev so make_graph() can discover the tools at startup.
+状态是一个由 mail_store.py 管理的小型 JSON 文件。由 start.sh 在
+langgraph dev 之前启动，这样 make_graph() 可以在启动时发现这些工具。
 """
 
 from __future__ import annotations
@@ -21,12 +21,12 @@ mcp = FastMCP("mock-mail", host="127.0.0.1", port=5002)
 
 @mcp.tool()
 def mail_list_messages(query: str = "") -> list[dict]:
-    """List messages in the inbox.
+    """列出收件箱中的消息。
 
-    Returns a summary (id, sender, subject, date, snippet) for each message —
-    not the full body. Use read_message to open one. The optional ``query`` is
-    a case-insensitive substring matched against the subject and sender, mostly
-    to mirror Gmail's search box; leave it empty to list everything.
+    返回每条消息的摘要（id、发件人、主题、日期、片段）——
+    而不是完整正文。用 read_message 打开某条。可选的 ``query`` 是
+    不区分大小写的子串，与主题和发件人匹配，主要用来模拟
+    Gmail 的搜索框；留空则列出全部。
     """
     store = load_store()
     q = query.strip().lower()
@@ -50,21 +50,21 @@ def mail_list_messages(query: str = "") -> list[dict]:
 
 @mcp.tool()
 def mail_read_message(message_id: str) -> dict:
-    """Return the full message (sender, subject, date, complete body) by id."""
+    """按 id 返回完整消息（发件人、主题、日期、完整正文）。"""
     store = load_store()
     for m in store["inbox"]:
         if m.get("id") == message_id:
             return m
-    return {"error": f"No message with id {message_id!r}."}
+    return {"error": f"没有 id 为 {message_id!r} 的消息。"}
 
 
 @mcp.tool()
 def mail_create_draft(to: str, subject: str, body: str) -> dict:
-    """Save a reply to the drafts folder. Does NOT send.
+    """把回复保存到草稿文件夹。不会发送。
 
-    Mirrors a real Gmail "create draft" call: the message is staged for the
-    human to review and send later. In this course a human-in-the-loop gate
-    runs before this tool, so a draft is only written after explicit approval.
+    与真实 Gmail 的"创建草稿"调用一致：消息被暂存，供人工稍后
+    查看和发送。在本课程中，该工具之前会运行人工审批
+    （human-in-the-loop）门控，因此草稿只有在明确批准后才会写入。
     """
     store = load_store()
     draft = {

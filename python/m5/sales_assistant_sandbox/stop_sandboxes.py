@@ -1,10 +1,8 @@
-"""Stop this lesson's running sandboxes.
+"""停止本课运行中的沙箱。
 
-Run on shutdown by start.sh so a student closing langgraph dev stops
-billing for sandbox compute immediately, instead of waiting out
-idle_ttl_seconds. Only touches sandboxes named "thread-*" (this project's
-naming convention from agent.py) that are currently "ready" — never touches
-other sandboxes in the workspace.
+由 start.sh 在关闭时运行，这样学生关闭 langgraph dev 后能立即停止沙箱计算的
+计费，而不是等 idle_ttl_seconds 结束。只处理名为 "thread-*"（agent.py 中本项目
+的命名约定）且当前为 "ready" 状态的沙箱——绝不会碰工作区中的其他沙箱。
 """
 
 from __future__ import annotations
@@ -14,10 +12,9 @@ from pathlib import Path
 from dotenv import dotenv_values
 from langsmith.sandbox import SandboxClient
 
-# Load the key explicitly from python/.env rather than relying on the
-# ambient shell environment, which may hold an unrelated LANGSMITH_API_KEY
-# (e.g. from an outer shell/session) that silently points at the wrong
-# workspace — this bit us once already when building this lesson.
+# 显式从 python/.env 加载密钥，而不是依赖外部 shell 环境——它可能持有无关的
+# LANGSMITH_API_KEY（例如来自外层 shell/会话），会静默地指向错误的工作区——
+# 在构建本课时已经被这个问题坑过一次。
 ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
 
 
@@ -32,9 +29,9 @@ def main() -> None:
     for sb in targets:
         try:
             client.stop_sandbox(sb.name)
-            print(f"Stopped sandbox {sb.name}")
+            print(f"已停止沙箱 {sb.name}")
         except Exception as exc:
-            print(f"Could not stop sandbox {sb.name}: {exc}")
+            print(f"无法停止沙箱 {sb.name}：{exc}")
 
 
 if __name__ == "__main__":

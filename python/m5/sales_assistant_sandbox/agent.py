@@ -1,18 +1,15 @@
 # python/m5/sales_assistant_sandbox/agent.py
-"""Chinook Sales Assistant.
+"""Chinook 销售助手。
 
-The entire filesystem — skills, memory, and anything the agent writes or
-runs — lives inside a per-thread LangSmith sandbox. Skills and AGENTS.md are
-seeded into the sandbox once, when it's created, from local disk. There is
-no local filesystem route the agent can read from or write to at runtime, so
-there is nothing for an untrusted execution result to bridge back to.
+整个文件系统——技能、记忆，以及代理写入或运行的一切——都保存在每个线程
+（per-thread）的 LangSmith 沙箱中。技能和 AGENTS.md 会在沙箱创建时从本地磁盘
+一次性种子化进去。运行时代理没有任何可读或可写的本地文件系统路径，因此不可信的
+执行结果没有任何途径可以桥接回本地。
 
-Charts have no dedicated tool: the agent writes a Python script with
-write_file and runs it with execute (added automatically because the backend
-supports sandboxed command execution), the same way it would run any other
-generated code.
+图表没有专门的工具：代理用 write_file 编写 Python 脚本，再用 execute 运行它
+（因为后端支持沙箱化命令执行，所以会自动添加），与运行其他任何生成的代码的方式相同。
 
-Start with:
+启动方式：
     ./start.sh
 """
 
@@ -42,29 +39,28 @@ logger = logging.getLogger(__name__)
 HERE = Path(__file__).resolve().parent
 
 SYSTEM_PROMPT = (
-    "You are a sales assistant for Jane Peacock, a Sales Support Agent at "
-    "Chinook, an online music distributor. Follow your operating manual (loaded "
-    "from your memory) and use the matching playbook from /skills/ for each task.\n\n"
-    "Your entire filesystem — skills, memory, and anything you write — lives "
-    "inside an isolated sandbox; there is no separate local filesystem. To "
-    "produce a chart, write a Python script with write_file and run it with "
-    "execute (e.g. `pip install matplotlib && python3 <script>`), saving the "
-    "image under /outputs/."
+    "你是 Jane Peacock（Chinook 在线音乐分销商的销售支持专员）的销售助手。请遵循"
+    "你的操作手册（从记忆中加载）中的说明，并为每项任务使用 /skills/ 下对应的"
+    "作战手册。\n\n"
+    "你的整个文件系统——技能、记忆以及你写入的一切——都位于一个隔离的沙箱内，"
+    "没有独立的本地文件系统。要生成图表，请用 write_file 编写 Python 脚本，"
+    "并用 execute 运行它（例如 `pip install matplotlib && python3 <script>`），"
+    "并把图片保存到 /outputs/ 下。"
 )
 
 MAIL_SERVER = {"transport": "streamable-http", "url": "http://127.0.0.1:5002/mcp"}
 
 _enable_search = bool(os.environ.get("TAVILY_API_KEY"))
 if not _enable_search:
-    logger.info("TAVILY_API_KEY not set — newsletter research subagent disabled.")
+    logger.info("未设置 TAVILY_API_KEY — 新闻通讯研究子代理已禁用。")
 
 
 def _lookup_or_create(name: str) -> tuple:
-    """Return (sandbox, freshly_created) for a thread-scoped sandbox.
+    """返回线程级沙箱的 (sandbox, freshly_created)。
 
-    Reuses a ready sandbox, restarts a stopped one, waits out a transitional
-    one, or creates a new one — same lookup pattern regardless of outcome, so
-    a thread's follow-up turns land in the same sandbox as its first.
+    复用就绪的沙箱、重启已停止的沙箱、等待处于过渡状态的沙箱，或创建新沙箱——
+    无论结果如何都采用相同的查找模式，因此一个线程后续的回合会落到与第一次
+    相同的沙箱中。
     """
     from langsmith.sandbox import SandboxClient
 
@@ -74,44 +70,42 @@ def _lookup_or_create(name: str) -> tuple:
         sb = existing[0]
         status = getattr(sb, "status", "ready")
         if status == "ready":
-            logger.info("Reusing sandbox %s", name)
+            logger.info("复用沙箱 %s", name)
             return sb, False
         if status == "stopped":
-            logger.info("Restarting stopped sandbox %s", name)
+            logger.info("重启已停止的沙箱 %s", name)
             try:
                 return client.start_sandbox(name, timeout=15), False
             except Exception as exc:
                 raise RuntimeError(
-                    "Sandbox is not available — please try again in a moment."
+                    "沙箱当前不可用——请稍后再试。"
                 ) from exc
-        logger.info("Waiting for sandbox %s (status: %s)", name, status)
+        logger.info("等待沙箱 %s（状态：%s）", name, status)
         try:
             return client.wait_for_sandbox(name, timeout=15), False
         except Exception as exc:
             raise RuntimeError(
-                "Sandbox is not available — please try again in a moment."
+                "沙箱当前不可用——请稍后再试。"
             ) from exc
     try:
-        # idle_ttl_seconds bounds compute cost if a student walks away
-        # mid-session; delete_after_stop_seconds bounds it further, since
-        # the server default (~14 days) is way more than a classroom needs
-        # a stopped sandbox to stick around for.
+        # idle_ttl_seconds 用于限制学生中途离开会话时的计算成本；delete_after_stop_seconds
+        # 进一步限制，因为服务器默认值（约 14 天）远超课堂教学需要已停止沙箱保留的时间。
         sb = client.create_sandbox(
             name=name, idle_ttl_seconds=600, delete_after_stop_seconds=3600
         )
-        logger.info("Created sandbox %s", name)
+        logger.info("已创建沙箱 %s", name)
         return sb, True
     except Exception:
-        # Another thread created it between our list and our create — look it up
+        # 在列出与创建之间，另一个线程已创建了它——重新查找一下
         existing = [s for s in client.list_sandboxes() if s.name == name]
         if existing:
-            logger.info("Reusing sandbox %s (race recovery)", name)
+            logger.info("复用沙箱 %s（竞争恢复）", name)
             return existing[0], False
         raise
 
 
 def _seed_skills_and_memory(ls_backend: LangSmithSandbox) -> None:
-    """Upload /skills and /AGENTS.md from local disk into a fresh sandbox."""
+    """把本地的 /skills 和 /AGENTS.md 上传到新沙箱中。"""
     files: list[tuple[str, bytes]] = [("/AGENTS.md", (HERE / "AGENTS.md").read_bytes())]
     for path in (HERE / "skills").rglob("*"):
         if path.is_file():
@@ -119,11 +113,11 @@ def _seed_skills_and_memory(ls_backend: LangSmithSandbox) -> None:
     results = ls_backend.upload_files(files)
     for (path, _), result in zip(files, results):
         if result.error:
-            logger.warning("Failed to seed %s into sandbox: %s", path, result.error)
+            logger.warning("向沙箱种子化 %s 失败：%s", path, result.error)
 
 
 async def _sandbox_backend_for_thread(thread_id: str) -> LangSmithSandbox:
-    """Look up (or create) this thread's sandbox and seed it if it's new."""
+    """查找（或创建）该线程的沙箱；如果沙箱是新建的，则进行种子化。"""
     sandbox, freshly_created = await asyncio.to_thread(_lookup_or_create, f"thread-{thread_id}")
     backend = LangSmithSandbox(sandbox)
     if freshly_created:
@@ -131,16 +125,14 @@ async def _sandbox_backend_for_thread(thread_id: str) -> LangSmithSandbox:
     return backend
 
 
-# Thread-scoped sandbox pattern:
+# 线程级沙箱模式：
 # https://docs.langchain.com/langsmith/graph-rebuild#context-manager-factory
 #
-# The factory accepts ServerRuntime so the server can signal whether it is
-# processing an actual run (execution_runtime is non-None) or handling
-# introspection calls (get_schema, get_graph, assistants.read, …). When
-# execution_runtime is None we skip sandbox setup and fall back to an
-# in-memory backend — same graph topology, no sandbox, no real filesystem
-# access at all. Real runs get their own thread-scoped sandbox looked up by
-# thread_id.
+# 该工厂接受 ServerRuntime，以便服务器能够指示自己是在处理一次实际运行
+# （execution_runtime 非 None），还是在处理内省调用（get_schema、get_graph、
+# assistants.read 等）。当 execution_runtime 为 None 时，我们跳过沙箱设置并回退到
+# 内存后端——图拓扑相同，但既没有沙箱，也完全没有真实文件系统访问。真实的运行
+# 会按 thread_id 查找各自的线程级沙箱。
 @contextlib.asynccontextmanager
 async def make_graph(config: RunnableConfig, runtime: ServerRuntime):
     if runtime.execution_runtime:

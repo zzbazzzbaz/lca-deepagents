@@ -1,2 +1,2 @@
 # python/m5/tools/__init__.py
-"""Custom tools for the Chinook Sales Assistant."""
+"""Chinook 销售助手的自定义工具。"""

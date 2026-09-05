@@ -1,10 +1,9 @@
 # python/m5/tools/search.py
-"""Web search tool for the genre-researcher subagent (weekly newsletter).
+"""为 genre-researcher 子代理（每周新闻通讯）提供的网页搜索工具。
 
-Thin wrapper over Tavily, identical in spirit to the Module 4 lab. Belongs only
-to the research subagent. Requires TAVILY_API_KEY in the environment; if it's
-absent the tool is simply not registered (see subagents.py), so the rest of the
-assistant still runs.
+对 Tavily 的薄封装，与第 4 模块实验的精神一致。仅属于调研子代理。需要环境中存在
+TAVILY_API_KEY；如果缺失，该工具根本不会注册（参见 subagents.py），因此助手其余
+部分仍然可以运行。
 """
 
 from __future__ import annotations
@@ -22,15 +21,12 @@ _RETRY_DELAY_SECONDS = 2
 
 @tool
 def internet_search(query: str, max_results: int = 8) -> dict:
-    """Search the web for recent news. Use this to research what's new in a
-    music genre — new releases, notable artists, trends, and events."""
-    # A fresh client per call, not a shared module-level singleton — the
-    # newsletter-agent's genre research fires several of these concurrently
-    # in one turn (LangGraph's ToolNode gathers tool calls in parallel
-    # threads), and a shared TavilyClient's connection pool was getting
-    # handed pooled keep-alive sockets the remote had already closed,
-    # surfacing as ConnectionResetError. Retrying covers any remaining
-    # one-off resets.
+    """搜索网页以获取近期新闻。用它来调研某个音乐类型中有什么新东西——
+    新发行、著名艺术家、趋势和活动。"""
+    # 每次调用都新建一个客户端，而不是共享模块级单例——newsletter-agent 的类型调研
+    # 会在同一回合内并发触发多个这样的调用（LangGraph 的 ToolNode 在并行线程中汇集
+    # 工具调用），而共享 TavilyClient 的连接池会被分发到远端已经关闭的池化 keep-alive
+    # 套接字，表现为 ConnectionResetError。重试可以覆盖任何剩余的一次性重置。
     client = TavilyClient(api_key=os.environ["TAVILY_API_KEY"])
     last_error: RequestsConnectionError | None = None
     for attempt in range(_MAX_ATTEMPTS):

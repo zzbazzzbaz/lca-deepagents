@@ -1,46 +1,46 @@
 ---
 name: weekly-newsletter
-description: "Produce the weekly 'This Week in Music' customer newsletter by researching the distributor's top genres in parallel and assembling a styled HTML page. Use when asked to create, write, or send the weekly newsletter or a music-news roundup."
+description: "通过并行研究发行商的头部流派并组装成带样式的 HTML 页面，制作每周的 'This Week in Music' 客户新闻稿。当被要求创建、撰写或发送周报或音乐新闻综述时使用。"
 ---
 
-# Weekly Newsletter
+# 周报
 
-A parallel-research task. Coordinate; let the researchers do the digging.
+一项并行研究任务。负责协调；让研究员去挖掘。
 
-## 1. Pick the genres
+## 1. 挑选流派
 
-- If Jane named genres, use those. Otherwise ask **chinook-analyst** for the
-  top 4 genres by revenue across the catalogue and feature those.
+- 如果 Jane 指定了流派，就用那些。否则请 **chinook-analyst**
+  给出按收入排名的头部 4 个流派，并加以呈现。
 
-## 2. Research in parallel
+## 2. 并行研究
 
-- Use the code interpreter to get a timestamp for this run:
-  `new Date().toISOString().slice(0, 19).replace(/[:.]/g, "-")` (e.g.
-  `2026-07-30T14-23-05`). Reuse this same value in step 4. Using the full
-  date-time (not just the date) keeps runs from colliding when this is run
-  more than once in a day, e.g. during testing.
-- For **each** genre, delegate to a **genre-researcher** subagent with the
-  `task` tool — fire them all off together so they run in parallel.
-- Tell each researcher its one genre and a private folder
-  (`/research/<timestamp>/<genre>/`) for raw notes, using this run's
-  timestamp. This keeps each run's scratch files separate so a subagent
-  never finds leftover notes from a prior run. Ask for a single ~120–180
-  word Markdown segment headed `## <Genre>`.
-- Do **not** research genres yourself — your job is to assemble.
+- 用代码解释器为本次运行获取一个时间戳：
+  `new Date().toISOString().slice(0, 19).replace(/[:.]/g, "-")`（例如
+  `2026-07-30T14-23-05`）。在第 4 步中复用同一个值。使用完整的
+  日期时间（而不仅仅是日期）可以在一天内多次运行时避免
+  冲突，例如在测试期间。
+- 对于**每个**流派，用 `task` 工具委托给一个 **genre-researcher**
+  子代理——把它们全部同时派发出去，这样它们就能并行运行。
+- 告诉每个研究员它的单个流派和一个私人文件夹
+  （`/research/<timestamp>/<genre>/`）用于存放原始笔记，使用本次运行的
+  时间戳。这样每次运行的临时文件相互隔离，子代理
+  永远不会发现前一次运行遗留的笔记。要求返回一段约 120–180
+  词的 Markdown 片段，标题为 `## <Genre>`。
+- **不要**自己研究流派——你的工作是组装。
 
-## 3. Assemble
+## 3. 组装
 
-- Collect the returned segments into one Markdown document:
-  - `# This Week in Music` title
-  - a one-sentence intro
-  - the genre segments, in order
+- 把返回的片段汇集到一份 Markdown 文档中：
+  - `# This Week in Music` 标题
+  - 一句话的引言
+  - 按顺序排列的流派片段
 
-## 4. Render and save
+## 4. 渲染并保存
 
-- Call `markdown_to_html` on the assembled Markdown.
-- `write_file` the returned HTML to `/outputs/newsletter-<timestamp>.html`,
-  using the same timestamp from step 2.
+- 对组装好的 Markdown 调用 `markdown_to_html`。
+- 用 `write_file` 将返回的 HTML 写入 `/outputs/newsletter-<timestamp>.html`，
+  使用第 2 步中的同一个时间戳。
 
-## Done
+## 完成
 
-Tell Jane where the newsletter was saved and list the genres covered.
+告诉 Jane 新闻稿保存到了哪里，并列出涵盖的流派。

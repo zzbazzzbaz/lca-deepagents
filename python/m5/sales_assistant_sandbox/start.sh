@@ -1,42 +1,42 @@
 #!/usr/bin/env bash
-# Start the mock mail server, the chat UI, then launch langgraph dev.
-# Run from the sales_assistant_sandbox directory: ./start.sh
+# 启动模拟邮件服务器、聊天界面，然后启动 langgraph dev。
+# 在 sales_assistant_sandbox 目录下运行：./start.sh
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Kill any leftover mail server or chat UI from a previous run.
+# 结束上一次运行残留的任何邮件服务器或聊天界面进程。
 for PORT in 5002 3000 3001; do
     OLD_PID=$(lsof -ti ":$PORT" 2>/dev/null || true)
     if [ -n "$OLD_PID" ]; then
-        echo "Port $PORT already in use (PID $OLD_PID) — killing it ..."
+        echo "端口 $PORT 已被占用（PID $OLD_PID）——正在结束它……"
         kill "$OLD_PID" 2>/dev/null || true
         sleep 1
     fi
 done
 
-echo "Starting mock mail server on http://127.0.0.1:5002 ..."
+echo "正在 http://127.0.0.1:5002 上启动模拟邮件服务器……"
 uv run python "$SCRIPT_DIR/mcp/mock_mail_server.py" &
 MAIL_PID=$!
 
-echo "Starting agent-chat-ui on http://localhost:3000 ..."
+echo "正在 http://localhost:3000 上启动 agent-chat-ui……"
 AGENT_CHAT_UI_DIR="$(cd "$SCRIPT_DIR/../../../agent-chat-ui" && pwd)"
 "$AGENT_CHAT_UI_DIR/start.sh" &
 UI_PID=$!
 
-# Optional: langchain-ai/deep-agents-ui, for trying it side-by-side with
-# agent-chat-ui. Not part of the lesson — only runs if that sibling repo
-# happens to exist on this machine (~/Documents/Github/deep-agents-ui).
-# It has no async-subagent or real-sandbox file support (see m5.5 notes),
-# so the newsletter/async-task/sandbox-files features won't show up here.
+# 可选：langchain-ai/deep-agents-ui，用于与 agent-chat-ui 并排试用。
+# 不是本课的一部分——仅当这台机器上恰好存在该兄弟仓库时才运行
+#（~/Documents/Github/deep-agents-ui）。
+# 它不支持异步子代理或真实沙箱文件（参见 m5.5 笔记），
+# 因此新闻通讯/异步任务/沙箱文件这些功能不会在这里出现。
 DEEP_AGENTS_UI_DIR="$HOME/Documents/Github/deep-agents-ui"
 DEEP_AGENTS_UI_PID=""
 if [ -d "$DEEP_AGENTS_UI_DIR" ]; then
-    echo "Starting deep-agents-ui on http://localhost:3001 ..."
+    echo "正在 http://localhost:3001 上启动 deep-agents-ui……"
     (
         cd "$DEEP_AGENTS_UI_DIR"
         if [ ! -d node_modules ]; then
-            echo "Installing deep-agents-ui dependencies (yarn install) ..."
+            echo "正在安装 deep-agents-ui 依赖（yarn install）……"
             yarn install
         fi
         yarn dev --port 3001
@@ -44,29 +44,26 @@ if [ -d "$DEEP_AGENTS_UI_DIR" ]; then
     DEEP_AGENTS_UI_PID=$!
 fi
 
-# Kill the mail server, the chat UI, and stop any running sandboxes on
-# Ctrl-C, normal exit, or TERM — so a student closing this script doesn't
-# keep paying for sandbox compute until idle_ttl_seconds catches up.
+# 在 Ctrl-C、正常退出或 TERM 时结束邮件服务器、聊天界面，并停止所有运行中的
+# 沙箱——这样学生关闭此脚本后，不会一直为沙箱计算付费直到 idle_ttl_seconds 生效。
 cleanup() {
-    # `set -e` applies inside a trap too. On a real Ctrl-C, the mail server
-    # and chat UI are in the same process group as this script and often die
-    # from the same SIGINT before these lines run — so `kill` on an
-    # already-dead PID returns non-zero, and without `|| true` that would
-    # abort cleanup() right here, silently skipping the sandbox-stop step.
+    # `set -e` 在 trap 内部同样生效。在真实的 Ctrl-C 场景下，邮件服务器和聊天界面
+    # 与本脚本处于同一进程组，通常会在这些行运行之前就因同一个 SIGINT 退出——
+    # 因此对已死的 PID 执行 `kill` 会返回非零，如果没有 `|| true`，就会在这里
+    # 中止 cleanup()，静默跳过停止沙箱这一步。
     kill "$MAIL_PID" 2>/dev/null || true
     kill "$UI_PID" 2>/dev/null || true
     [ -n "$DEEP_AGENTS_UI_PID" ] && kill "$DEEP_AGENTS_UI_PID" 2>/dev/null || true
-    # pnpm/yarn run dev spawns `next dev` as a child, not a replacement,
-    # process — killing the parent PID alone can leave it (and
-    # next-server) orphaned.
+    # pnpm/yarn run dev 会把 `next dev` 作为子进程（而非替代进程）派生出来——
+    # 仅结束父进程 PID 可能会让它（以及 next-server）变成孤儿进程。
     pkill -f "next dev" 2>/dev/null || true
     wait "$MAIL_PID" "$UI_PID" 2>/dev/null || true
-    echo "Stopping any running sandboxes ..."
+    echo "正在停止所有运行中的沙箱……"
     uv run python "$SCRIPT_DIR/stop_sandboxes.py" || true
 }
 trap cleanup EXIT INT TERM
 
-# Wait until the server accepts connections (up to 10 seconds).
+# 等待服务器接受连接（最多 10 秒）。
 for i in $(seq 1 10); do
     if curl -s --max-time 1 http://127.0.0.1:5002/ >/dev/null 2>&1; then
         break
@@ -74,11 +71,11 @@ for i in $(seq 1 10); do
     sleep 1
 done
 
-echo "Mail server up (PID $MAIL_PID), chat UI starting (PID $UI_PID). Starting langgraph dev ..."
+echo "邮件服务器已就绪（PID $MAIL_PID），聊天界面正在启动（PID $UI_PID）。正在启动 langgraph dev……"
 cd "$SCRIPT_DIR"
 
-# langgraph dev's local queue defaults to 1 worker slot. Async subagents
-# (genre-researcher) each hold a slot for their whole run, so the default
-# starves the main thread of a slot to handle new messages while they're
-# in flight — see docs.langchain.com/oss/python/deepagents/async-subagents.
+# langgraph dev 的本地队列默认只有 1 个工作槽位。每个异步子代理
+#（genre-researcher）在其整个运行期间都会占住一个槽位，因此默认配置会让主线程
+# 在它们运行期间缺少可用的槽位来处理新消息——参见
+# docs.langchain.com/oss/python/deepagents/async-subagents。
 uv run langgraph dev --n-jobs-per-worker 10

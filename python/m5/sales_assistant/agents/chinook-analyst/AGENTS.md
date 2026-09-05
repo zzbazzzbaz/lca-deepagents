@@ -46,4 +46,6 @@
 
 ## 最近查询
 
-_（暂无）_
+- 报价预查（Jane 名下）：**Morgan Vale / Northern Lights Cafes（客户主题咖啡馆连锁，门店背景音乐授权）已在库中：CustomerId 62，SupportRepId 3（即 Jane Peacock 名下），邮箱 morgan.vale@northern-lights-cafes.example**。此库未再调用 add_customer。
+- 重要数据特征：本样例库销量很稀疏——InvoiceLine 共 2240 行，覆盖 1984 首不同曲目；单曲最高销量 = 2（256 首并列），其余 1728 首各 1。因此"最畅销"实为 256 首并列榜首（2 次），做 top 清单时须说明并列并按名称作展示排序。
+- Rock（GenreId 1）：1297 首，全部 0.99；Metal（GenreId 3）：374 首，全部 0.99。两流派 UnitPrice 无其他档位。

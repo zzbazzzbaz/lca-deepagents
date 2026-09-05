@@ -20,15 +20,28 @@ create_deep_agent(model=model)），而且你只能通过 Studio 的聊天面板
 然后在打开的 Studio 窗口中与你的代理对话，或者看 call_agent_api.py，改为通过 API 与它对话。
 """
 
+from datetime import datetime
+
 from deepagents import create_deep_agent
 from langchain_core.tools import tool
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from models import model
 
 
 class ToolInput(BaseModel):
     time: str = Field(description="要查询的时间，如 '2026-9-5'")
+
+    @field_validator("time")
+    @classmethod
+    def validate_time(cls, v: str) -> str:
+        try:
+            datetime.strptime(v, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError(
+                "time 必须是有效日期，格式如 '2026-9-5'（月份和日期都必须在有效范围内）"
+            )
+        return v
 
 
 @tool(

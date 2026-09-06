@@ -21,14 +21,17 @@ MemoryMiddleware（记忆中间件）需要与主代理使用*同一个*文件�
 
 from __future__ import annotations
 
-from deepagents import FilesystemPermission, MemoryMiddleware
+from deepagents import FilesystemPermission, MemoryMiddleware, SubAgent
 from deepagents.backends.protocol import BackendProtocol
+from langchain.agents.middleware import InterruptOnConfig
 from tools.sql import add_customer, introspect_schema, query_chinook
 
 from models import model, strong_model
 
 # 允许对受门控的写入做出"批准/编辑/拒绝"三种决策。
-_APPROVE_EDIT_REJECT = {"allowed_decisions": ["approve", "edit", "reject"]}
+_APPROVE_EDIT_REJECT: InterruptOnConfig = {
+    "allowed_decisions": ["approve", "edit", "reject"]
+}
 
 
 ANALYST_PROMPT = """你是 chinook-analyst，Chinook 销售助手的数据专家。\
@@ -94,10 +97,10 @@ def build_subagents(
     *,
     enable_search: bool,
     mail_tools: list,
-) -> list[dict]:
+) -> list[SubAgent]:
     """返回子代理规格，连接到共享的文件系统后端。"""
 
-    chinook_analyst = {
+    chinook_analyst: SubAgent = {
         "name": "chinook-analyst",
         "description": (
             "查询 Chinook 数据库获取目录价格、客户记录、购买历史和区域指标，"
@@ -118,7 +121,7 @@ def build_subagents(
         "interrupt_on": {"add_customer": _APPROVE_EDIT_REJECT},
     }
 
-    quote_reviewer = {
+    quote_reviewer: SubAgent = {
         "name": "quote-reviewer",
         "description": (
             "审核一份已起草的报价（明细行、折扣、总额）的算术是否正确、"
@@ -128,7 +131,7 @@ def build_subagents(
         "model": strong_model,
     }
 
-    inbox_manager = {
+    inbox_manager: SubAgent = {
         "name": "inbox-manager",
         "description": (
             "读取 Jane 的收件箱并保存回复草稿。任何邮件工作都委托到这里："
@@ -145,7 +148,7 @@ def build_subagents(
     if enable_search:
         from tools.search import internet_search
 
-        genre_researcher = {
+        genre_researcher: SubAgent = {
             "name": "genre-researcher",
             "description": (
                 "研究一个音乐流派，并写一段关于其最新动态的简短新闻稿片段。"
@@ -158,9 +161,7 @@ def build_subagents(
                 FilesystemPermission(
                     operations=["read", "write"], paths=["/research/**"], mode="allow"
                 ),
-                FilesystemPermission(
-                    operations=["write"], paths=["/**"], mode="deny"
-                ),
+                FilesystemPermission(operations=["write"], paths=["/**"], mode="deny"),
             ],
         }
         subagents.append(genre_researcher)

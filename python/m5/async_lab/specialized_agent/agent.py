@@ -13,14 +13,15 @@ pyproject.toml 和模型配置，因此 pandas（下面这个分析工具需要�
 让它保持运行，然后在第二个终端启动 ../main_agent。主代理通过 HTTP 在
 http://127.0.0.1:2025 访问这个代理，和访问任何其他远程部署完全一样。
 """
-
+import os
 import time
+from pathlib import Path
 
 import pandas as pd
-from langchain_anthropic import ChatAnthropic
-from langchain_core.tools import tool
-
 from deepagents import create_deep_agent
+from dotenv import load_dotenv
+from langchain.chat_models import init_chat_model
+from langchain_core.tools import tool
 
 SALES = pd.DataFrame(
     {
@@ -47,8 +48,14 @@ def analyze_sales(group_by: str = "region") -> str:
     ]
     return "\n".join(lines)
 
-
-model = ChatAnthropic(model="claude-haiku-4-5")
-
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env", override=True)
+model = init_chat_model(
+    os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash"),  # noqa: F821
+    model_provider="deepseek",
+    base_url=os.environ["DEEPSEEK_BASE_URL"],
+    api_key=os.environ["DEEPSEEK_API_KEY"],
+    timeout=60,
+    max_retries=2,
+)
 # langgraph.json 指向这个模块级变量："./agent.py:graph"
 graph = create_deep_agent(model=model, tools=[analyze_sales])
